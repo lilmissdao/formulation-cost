@@ -1,0 +1,2780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulation Cost Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#eae7e0;
+    --ink-dim:#a9a49a;
+    --bg:#171d1b;
+    --bg-panel:#1e2623;
+    --bg-panel-2:#232d29;
+    --line:#374039;
+    --copper:#c97c4b;
+    --copper-bright:#e2966a;
+    --verdigris:#6fa98c;
+    --verdigris-dim:#4f7a67;
+    --red:#d3766a;
+    --water-color:#3f6f8f;
+    --panthenol-color:#c97c4b;
+    --niacin-color:#e2c169;
+    --ghk-color:#6fa98c;
+    --ahk-color:#9083c9;
+    --phenoxy-color:#5a9b7a;
+    --ethoxy-color:#c9a24f;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  .section-nav{
+    position:fixed;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    z-index:200;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:7px 5px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.35);
+  }
+  .section-nav-btn{
+    display:block;
+    width:100%;
+    text-align:left;
+    white-space:nowrap;
+    padding:7px 10px;
+    border-radius:6px;
+    background:var(--bg-panel-2);
+    color:var(--ink-dim);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-decoration:none;
+    border:1px solid var(--line);
+    cursor:pointer;
+    transition:background 0.15s ease,color 0.15s ease,border-color 0.15s ease;
+  }
+  .section-nav-btn:hover{background:var(--copper);color:#171d1b;border-color:var(--copper);}
+  @media (max-width:640px){
+    .section-nav{right:4px;padding:5px 4px;gap:4px;}
+    .section-nav-btn{padding:6px 8px;font-size:9.5px;}
+  }
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(111,169,140,0.08), transparent 45%),
+      radial-gradient(circle at 85% 20%, rgba(201,124,75,0.10), transparent 50%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    padding:32px 16px 80px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1600px;margin:0 auto;}
+  header{margin-bottom:36px;border-bottom:1px solid var(--line);padding-bottom:24px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--verdigris);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(28px,4vw,40px);
+    margin:0 0 8px;
+    letter-spacing:-0.01em;
+  }
+  h1 span{color:var(--copper-bright);font-style:italic;font-weight:400;}
+  header p{color:var(--ink-dim);font-size:14.5px;max-width:600px;line-height:1.5;margin:0;}
+
+  section{margin-bottom:40px;}
+  .section-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;}
+  .section-num{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--verdigris-dim);
+    font-size:13px;
+  }
+  h2{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:20px;
+    margin:0;
+  }
+
+  .panel{
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:24px;
+  }
+
+  /* --- Ratio bar signature element --- */
+  .ratio-bar{
+    display:flex;
+    height:44px;
+    border-radius:8px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .ratio-seg{
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#12160f;
+    transition:width 0.15s ease;
+    white-space:nowrap;
+    overflow:hidden;
+  }
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:24px;}
+  .legend-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-dim);font-family:'IBM Plex Mono',monospace;}
+  .swatch{width:10px;height:10px;border-radius:2px;display:inline-block;}
+
+  .input-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:18px;
+  }
+  .field label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    margin-bottom:8px;
+  }
+  .field label .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;position:relative;top:-1px;}
+  .input-row{display:flex;align-items:center;border:1px solid var(--line);border-radius:7px;background:var(--bg-panel-2);overflow:hidden;}
+  .input-row:focus-within{border-color:var(--verdigris-dim);}
+  .input-row span.prefix, .input-row span.suffix{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:var(--ink-dim);
+    padding:0 10px;
+    white-space:nowrap;
+  }
+  input[type=number]{
+    -moz-appearance:textfield;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14.5px;
+    padding:11px 4px;
+    width:100%;
+    min-width:0;
+  }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .readonly .input-row{background:#1a221f;}
+  .readonly input{color:var(--ink-dim);}
+  .hint{font-size:11.5px;color:var(--ink-dim);margin-top:6px;}
+  .hint.warn{color:var(--red);}
+
+  select{
+    background:var(--bg-panel-2);
+    border:none;
+    outline:none;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    padding:11px 8px;
+    width:100%;
+    min-width:0;
+    -webkit-appearance:none;
+    appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23a9a49a'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 10px center;
+    padding-right:22px;
+  }
+
+  /* --- Ingredient cost converter table --- */
+  .cost-table-wrap{overflow-x:auto;}
+  table.cost-table{width:100%;border-collapse:collapse;min-width:760px;}
+  table.cost-table th{
+    text-align:left;
+    padding:0 10px 10px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    font-weight:500;
+    border-bottom:1px solid var(--line);
+  }
+  th.sortable-th{
+    cursor:pointer;
+    user-select:none;
+    white-space:nowrap;
+    transition:color 0.15s ease;
+  }
+  th.sortable-th:hover{color:var(--verdigris);}
+  th.sortable-th.sort-active{color:var(--copper-bright);}
+  .sort-indicator{
+    display:inline-block;
+    width:10px;
+    opacity:0.6;
+  }
+  .filter-value-chip{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:11.5px;
+    font-family:'IBM Plex Mono',monospace;
+    cursor:pointer;
+    background:var(--bg-panel-2);
+    border:1px solid var(--line);
+    border-radius:5px;
+    padding:3px 8px;
+    white-space:nowrap;
+  }
+  .filter-value-chip input{accent-color:var(--verdigris);cursor:pointer;width:11px;height:11px;}
+  .filter-block{
+    display:inline-flex;
+    flex-direction:column;
+    gap:6px;
+    background:var(--bg-panel-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 10px;
+    max-width:100%;
+  }
+  .filter-block-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+  }
+  .filter-remove-col{
+    background:none;
+    border:none;
+    color:var(--ink-dim);
+    cursor:pointer;
+    font-size:13px;
+    line-height:1;
+    padding:0 2px;
+  }
+  .filter-remove-col:hover{color:var(--red);}
+  .filter-chips{display:flex;flex-wrap:wrap;gap:5px;max-width:340px;}
+  table.cost-table td{
+    padding:10px 10px;
+    vertical-align:middle;
+    border-bottom:1px solid var(--line);
+  }
+  table.cost-table tr:last-child td{border-bottom:none;}
+  .ing-name{display:flex;align-items:center;gap:9px;font-size:13.5px;white-space:nowrap;}
+  .ing-name .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .ing-checkbox{
+    width:17px;
+    height:17px;
+    accent-color:var(--verdigris);
+    cursor:pointer;
+  }
+  .ing-checkbox-cell{text-align:center;}
+  tr.ing-disabled{opacity:0.4;}
+  .subtag{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9.5px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--ink-dim);
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:1px 6px;
+    margin-left:8px;
+  }
+  .cell-input{width:100%;min-width:80px;}
+  .cell-input .input-row{min-width:80px;}
+  .computed-rate{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13.5px;
+    color:var(--copper-bright);
+    white-space:nowrap;
+  }
+  .computed-rate small{display:block;color:var(--ink-dim);font-size:10.5px;margin-top:2px;}
+
+  table{width:100%;border-collapse:collapse;margin-top:6px;}
+  th,td{
+    text-align:right;
+    padding:10px 12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    border-bottom:1px solid var(--line);
+  }
+  th{
+    color:var(--ink-dim);
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    border-bottom:1px solid var(--line);
+  }
+  td:first-child, th:first-child{text-align:left;color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;}
+  tr:last-child td{border-bottom:none;}
+  tr.total td{font-weight:600;color:var(--copper-bright);border-top:1px solid var(--line);}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:640px){.two-col{grid-template-columns:1fr;}}
+
+  .result-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:8px;}
+  @media (max-width:640px){.result-cards{grid-template-columns:1fr;}}
+  .result-card{
+    background:var(--bg-panel-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px 22px;
+  }
+  .result-card h3{
+    font-family:'Fraunces',serif;
+    font-size:17px;
+    margin:0 0 14px;
+    font-weight:600;
+    color:var(--copper-bright);
+  }
+  .kv{display:flex;justify-content:space-between;padding:6px 0;font-size:13.5px;border-bottom:1px dashed var(--line);}
+  .kv:last-of-type{border-bottom:none;}
+  .kv .k{color:var(--ink-dim);}
+  .kv .v{font-family:'IBM Plex Mono',monospace;}
+  .kv.profit .v{color:var(--verdigris);font-weight:600;}
+  .kv.loss .v{color:var(--red);font-weight:600;}
+  .margin-pill{
+    display:inline-block;
+    margin-top:12px;
+    padding:6px 12px;
+    border-radius:100px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    font-weight:600;
+  }
+  .margin-pill.good{background:rgba(111,169,140,0.15);color:var(--verdigris);}
+  .margin-pill.bad{background:rgba(211,118,106,0.15);color:var(--red);}
+
+  footer{margin-top:12px;color:var(--ink-dim);font-size:11.5px;font-family:'IBM Plex Mono',monospace;text-align:center;}
+
+  textarea{
+    width:100%;
+    background:var(--bg-panel-2);
+    border:1px solid var(--line);
+    border-radius:7px;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    line-height:1.5;
+    padding:12px;
+    resize:vertical;
+  }
+  textarea:focus{outline:none;border-color:var(--verdigris-dim);}
+  input[type=text]{
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14px;
+    padding:11px 10px;
+    width:100%;
+  }
+  .btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    padding:10px 16px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background:var(--bg-panel-2);
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color 0.15s ease, color 0.15s ease;
+  }
+  .btn:hover{border-color:var(--verdigris-dim);color:var(--verdigris);}
+  .btn-primary{background:var(--copper);border-color:var(--copper);color:#171d1b;font-weight:600;}
+  .btn-primary:hover{background:var(--copper-bright);border-color:var(--copper-bright);color:#171d1b;}
+  #recipeStatus.warn{color:var(--red);}
+</style>
+</head>
+<body>
+<nav class="section-nav" aria-label="Jump to section">
+  <button type="button" class="section-nav-btn" data-target="sec-00">Save/Load</button>
+  <button type="button" class="section-nav-btn" data-target="sec-01">Formula</button>
+  <button type="button" class="section-nav-btn" data-target="sec-02">Ingredients</button>
+  <button type="button" class="section-nav-btn" data-target="sec-02b">Bulk Pricing</button>
+  <button type="button" class="section-nav-btn" data-target="sec-03">Batch/Bottle</button>
+  <button type="button" class="section-nav-btn" data-target="sec-04">Packaging</button>
+  <button type="button" class="section-nav-btn" data-target="sec-05">Channel Pricing</button>
+  <button type="button" class="section-nav-btn" data-target="sec-06">Scenarios</button>
+  <button type="button" class="section-nav-btn" data-target="sec-07">Favorites</button>
+</nav>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Batch &amp; Bottle Economics</p>
+    <h1>Formulation <span>Cost</span> Calculator</h1>
+    <p>Enter what you actually paid — however it was sold to you, by the mL, the liter, the pound, or the ounce — and set your formula ratios. Everything converts automatically to your batch size, a 2&nbsp;oz bottle, a 4&nbsp;oz bottle, and your retail margin.</p>
+  </header>
+
+  <!-- SECTION 0: SAVE / LOAD RECIPE -->
+  <section id="sec-00">
+    <div class="section-head"><span class="section-num">00</span><h2>Save &amp; load this recipe</h2></div>
+    <div class="panel">
+      <div class="field" style="margin-bottom:16px;">
+        <label>Recipe name</label>
+        <div class="input-row"><input type="text" id="recipeName" value="Scalp Spray v1"></div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+        <button class="btn btn-primary" id="btnDownload">Download recipe (.json)</button>
+        <button class="btn" id="btnUploadTrigger">Upload recipe (.json)</button>
+        <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
+        <button class="btn" id="btnCopyText">Copy as text</button>
+      </div>
+
+      <div class="field">
+        <label>Recipe text — copy this to keep a backup anywhere, or paste a saved one here and load it</label>
+        <textarea id="recipeText" rows="6" placeholder="Paste a previously saved recipe here, then click Load."></textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button class="btn" id="btnLoadText">Load from text above</button>
+      </div>
+      <div id="recipeStatus" class="hint" style="margin-top:12px;"></div>
+    </div>
+  </section>
+
+  <!-- SECTION 1: FORMULA -->
+  <section id="sec-01">
+    <div class="section-head"><span class="section-num">01</span><h2>Formula composition</h2></div>
+    <div class="panel">
+      <div class="ratio-bar" id="ratioBar"></div>
+      <div class="legend" id="legend"></div>
+      <div class="legend" id="powderNote" style="margin-top:-8px;"></div>
+
+      <div class="input-grid">
+        <div class="field">
+          <label><span class="dot" style="background:var(--panthenol-color)"></span>Panthenol (B5)</label>
+          <div class="input-row"><input type="number" id="panthenolPct" value="3" step="0.1" min="0" max="100"><span class="suffix">%</span></div>
+        </div>
+        <div class="field">
+          <label><span class="dot" style="background:var(--niacin-color)"></span>Niacinamide</label>
+          <div class="input-row"><input type="number" id="niacinPct" value="2" step="0.1" min="0" max="100"><span class="suffix">%</span></div>
+        </div>
+        <div class="field">
+          <label><span class="dot" style="background:var(--phenoxy-color)"></span>Phenoxyethanol</label>
+          <div class="input-row"><input type="number" id="phenoxyPct" value="0.6" step="0.05" min="0" max="100"><span class="suffix">%</span></div>
+        </div>
+        <div class="field">
+          <label><span class="dot" style="background:var(--ethoxy-color)"></span>Ethoxydiglycol</label>
+          <div class="input-row"><input type="number" id="ethoxyPct" value="0" step="0.05" min="0" max="100"><span class="suffix">%</span></div>
+        </div>
+        <div class="field">
+          <label><span class="dot" style="background:var(--ghk-color)"></span>GHK-Cu — final % in batch</label>
+          <div class="input-row"><input type="number" id="ghkFinalPct" value="1" step="0.05" min="0" max="10"><span class="suffix">%</span></div>
+          <div class="hint" id="ghkHint"></div>
+        </div>
+        <div class="field">
+          <label><span class="dot" style="background:var(--ahk-color)"></span>AHK-Cu — final % in batch</label>
+          <div class="input-row"><input type="number" id="ahkFinalPct" value="0.5" step="0.05" min="0" max="10"><span class="suffix">%</span></div>
+          <div class="hint" id="ahkHint"></div>
+        </div>
+        <div class="field readonly">
+          <label><span class="dot" style="background:var(--water-color)"></span>Water (remainder)</label>
+          <div class="input-row"><input type="number" id="waterPct" value="" readonly><span class="suffix">%</span></div>
+          <div class="hint" id="waterHint"></div>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:16px;">Below, check off whether each peptide comes from its liquid stock or its powder in the ingredient table — that choice (and each one's own stock % or purity) determines how much of the batch volume it actually displaces, alongside its cost.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 2: INGREDIENT COST -->
+  <section id="sec-02">
+    <div class="section-head"><span class="section-num">02</span><h2>Ingredient purchase cost — panthenol, niacinamide, phenoxyethanol, ethoxydiglycol &amp; water</h2></div>
+    <div class="panel">
+      <p class="hint" style="margin-top:-4px;margin-bottom:16px;">GHK-Cu and AHK-Cu pricing lives in Bulk Pricing (Section 05b) now, not here — this table is panthenol, niacinamide, phenoxyethanol, ethoxydiglycol, and water. Enter the price and the amount it came in, in whatever unit the supplier sells it — the cost column converts it automatically. For anything sold by weight, set the density (g per mL once mixed/dissolved — water ≈ 1.0).</p>
+      <div class="cost-table-wrap">
+        <table class="cost-table">
+          <thead>
+            <tr>
+              <th style="text-align:center;">Used</th>
+              <th>Ingredient</th>
+              <th>You paid</th>
+              <th>For this amount</th>
+              <th>Unit</th>
+              <th>Density (g/mL)</th>
+              <th style="text-align:right;">Cost</th>
+            </tr>
+          </thead>
+          <tbody id="ingredientCostBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2B: BULK PRICING REFERENCE -->
+  <section id="sec-02b">
+    <div class="section-head"><span class="section-num">02b</span><h2>Bulk pricing reference</h2></div>
+    <p class="hint" style="margin-bottom:16px;">This is the only place GHK-Cu and AHK-Cu pricing lives now. Add each bulk option you're comparing, and mark one per peptide "Active" — that's the one driving the live sheet (Batch &amp; Bottle breakdown, and the default Channel Pricing basis). $/2oz and $/4oz use whatever concentration is currently set in Section 01, regardless of which row is active.</p>
+    <div class="panel">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        <button class="btn btn-primary" id="btnAddBulkPrice">+ Add bulk price</button>
+        <button class="btn btn-primary" id="btnGenerateScenarios">Generate scenarios from bulk prices →</button>
+        <button class="btn" id="btnDownloadBulkPrices">Download (.json)</button>
+        <button class="btn" id="btnUploadBulkPricesTrigger">Upload (.json)</button>
+        <input type="file" id="importBulkPricesFile" accept="application/json,.json" style="display:none;">
+        <button class="btn" id="btnCopyBulkPricesText">Copy as text</button>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Bulk pricing text — copy this to keep a backup anywhere, or paste a saved one here and load it</label>
+        <textarea id="bulkPricesText" rows="5" placeholder="Paste previously saved bulk pricing here, then click Load."></textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <button class="btn" id="btnLoadBulkPricesText">Load from text above</button>
+      </div>
+      <div id="bulkPriceStatus" class="hint" style="margin-bottom:12px;"></div>
+      <div class="field" style="max-width:280px;margin-bottom:14px;">
+        <label>Freeze columns through</label>
+        <div class="input-row">
+          <select id="bulkFreezeSelect">
+            <option value="-1">None</option>
+            <option value="0">Active</option>
+            <option value="1">Peptide</option>
+            <option value="2">Form</option>
+            <option value="3">Manufacturer</option>
+            <option value="4">Price paid</option>
+            <option value="5">For this amount</option>
+            <option value="6">Unit</option>
+            <option value="7">Density</option>
+            <option value="8">Stock % / Purity %</option>
+            <option value="9">Notes</option>
+            <option value="10">Rate</option>
+            <option value="11">$/2oz</option>
+            <option value="12">$/4oz</option>
+            <option value="13">Bottles/2oz</option>
+            <option value="14">Bottles/4oz</option>
+          </select>
+        </div>
+      </div>
+      <div class="cost-table-wrap">
+        <table class="cost-table" id="bulkPriceTable" style="display:none;">
+          <thead>
+            <tr>
+              <th style="text-align:center;">Active</th>
+              <th>Peptide</th>
+              <th>Form</th>
+              <th>Manufacturer</th>
+              <th>Price paid</th>
+              <th>For this amount</th>
+              <th>Unit</th>
+              <th>Density (g/mL)</th>
+              <th>Stock % / Purity %</th>
+              <th>Notes</th>
+              <th style="text-align:right;">Rate</th>
+              <th style="text-align:right;">$/2oz</th>
+              <th style="text-align:right;">$/4oz</th>
+              <th style="text-align:right;">Bottles/2oz</th>
+              <th style="text-align:right;">Bottles/4oz</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="bulkPriceTableBody"></tbody>
+        </table>
+        <div id="bulkPriceEmpty" class="hint">No bulk prices saved yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: BATCH & BOTTLE BREAKDOWN -->
+  <section id="sec-03">
+    <div class="section-head"><span class="section-num">03</span><h2>Batch &amp; bottle breakdown</h2></div>
+    <div class="panel">
+      <div style="display:flex;flex-wrap:wrap;gap:24px;margin-bottom:20px;align-items:flex-end;">
+        <div class="field" style="max-width:220px;margin-bottom:0;">
+          <label>Batch volume</label>
+          <div class="input-row"><input type="number" id="batchVolume" value="1000" step="10" min="1"><span class="suffix">mL</span></div>
+          <div class="hint">Editing this re-splits the two boxes below 50/50 by volume.</div>
+        </div>
+        <div class="field" style="max-width:160px;margin-bottom:0;">
+          <label>2oz bottles</label>
+          <div class="input-row"><input type="number" id="batchBottles2oz" value="0" step="1" min="0"></div>
+        </div>
+        <div class="field" style="max-width:160px;margin-bottom:0;">
+          <label>4oz bottles</label>
+          <div class="input-row"><input type="number" id="batchBottles4oz" value="0" step="1" min="0"></div>
+        </div>
+        <button class="btn btn-primary" id="btnApplyBottleCounts" style="height:44px;">Apply bottle counts →</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th id="batchTableHeader">1000 mL batch recipe</th><th>% of formula</th><th>Amount</th><th>Need in stock</th><th>Ingredient cost</th></tr>
+        </thead>
+        <tbody id="batchTableBody"></tbody>
+        <tfoot>
+          <tr class="total"><td id="batchTotalLabel">Total (1000 mL)</td><td></td><td id="batchTotalMl"></td><td></td><td id="batchTotalCost"></td></tr>
+        </tfoot>
+      </table>
+
+      <table style="margin-top:24px;">
+        <thead>
+          <tr><th>Per-bottle ingredient cost</th><th>2 oz (59.1 mL)</th><th>4 oz (118.3 mL)</th></tr>
+        </thead>
+        <tbody id="bottleIngredientBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 4: PACKAGING -->
+  <section id="sec-04">
+    <div class="section-head"><span class="section-num">04</span><h2>Packaging cost per unit</h2></div>
+    <div class="panel">
+      <table>
+        <thead>
+          <tr><th style="text-align:left;">Component</th><th>2 oz bottle</th><th>4 oz bottle</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bottle</td>
+            <td><div class="input-row" style="max-width:130px;margin-left:auto;"><span class="prefix">$</span><input type="number" id="bottle2ozCost" value="1.00" step="0.01" min="0"></div></td>
+            <td><div class="input-row" style="max-width:130px;margin-left:auto;"><span class="prefix">$</span><input type="number" id="bottle4ozCost" value="1.00" step="0.01" min="0"></div></td>
+          </tr>
+          <tr>
+            <td>Box</td>
+            <td><div class="input-row" style="max-width:130px;margin-left:auto;"><span class="prefix">$</span><input type="number" id="box2ozCost" value="1.27" step="0.01" min="0"></div></td>
+            <td><div class="input-row" style="max-width:130px;margin-left:auto;"><span class="prefix">$</span><input type="number" id="box4ozCost" value="2.20" step="0.01" min="0"></div></td>
+          </tr>
+          <tr>
+            <td>Misc (label, dropper/pump, seal, insert)</td>
+            <td><div class="input-row" style="max-width:130px;margin-left:auto;"><span class="prefix">$</span><input type="number" id="misc2ozCost" value="0.82" step="0.01" min="0"></div></td>
+            <td><div class="input-row" style="max-width:130px;margin-left:auto;"><span class="prefix">$</span><input type="number" id="misc4ozCost" value="0.90" step="0.01" min="0"></div></td>
+          </tr>
+          <tr class="total">
+            <td>Packaging total</td>
+            <td id="pkgTotal2oz"></td>
+            <td id="pkgTotal4oz"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 5: CHANNEL PRICING & MARGIN -->
+  <section id="sec-05">
+    <div class="section-head"><span class="section-num">05</span><h2>Channel pricing, margin &amp; volume</h2></div>
+    <p class="hint" style="margin-bottom:18px;">Retail price is shared across both channels. Amazon ad cost uses ROAS (return on ad spend — a ROAS of 3 means $1 of ad spend returns $3 of revenue, so ad spend per unit = retail ÷ ROAS). DTC ad cost is a flat monthly budget instead, since that's usually how it's tracked and it isn't tied to a single unit.</p>
+
+    <div class="panel" style="margin-bottom:20px;">
+      <div class="input-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px;">
+        <div class="field">
+          <label>Retail price — 2 oz</label>
+          <div class="input-row"><span class="prefix">$</span><input type="number" id="retail2oz" value="35.00" step="0.5" min="0"></div>
+        </div>
+        <div class="field">
+          <label>Retail price — 4 oz</label>
+          <div class="input-row"><span class="prefix">$</span><input type="number" id="retail4oz" value="55.00" step="0.5" min="0"></div>
+        </div>
+      </div>
+      <div class="field" style="max-width:460px;">
+        <label>Ingredient cost basis for this P&amp;L</label>
+        <div class="input-row"><select id="scenarioBasisSelect"><option value="live">Current sheet formula (live)</option></select></div>
+        <div class="hint" id="scenarioBasisHint"></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+
+      <!-- AMAZON PANEL -->
+      <div class="panel">
+        <h3 style="font-family:'Fraunces',serif;font-size:18px;margin:0 0 16px;color:var(--copper-bright);">Amazon</h3>
+        <div class="input-grid" style="grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+          <div class="field">
+            <label>Amazon cut</label>
+            <div class="input-row"><input type="number" id="amzFeePct" value="27" step="1" min="0" max="100"><span class="suffix">%</span></div>
+          </div>
+          <div class="field">
+            <label>ROAS</label>
+            <div class="input-row"><input type="number" id="amzRoas" value="2.2" step="0.1" min="0.1"></div>
+          </div>
+          <div class="field">
+            <label>Monthly units — 2 oz</label>
+            <div class="input-row"><input type="number" id="amzVol2oz" value="400" step="10" min="0"></div>
+          </div>
+          <div class="field">
+            <label>Monthly units — 4 oz</label>
+            <div class="input-row"><input type="number" id="amzVol4oz" value="400" step="10" min="0"></div>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th style="text-align:left;">Per unit</th><th>2 oz</th><th>4 oz</th></tr></thead>
+          <tbody id="amzUnitTable"></tbody>
+        </table>
+        <table style="margin-top:18px;">
+          <thead><tr><th style="text-align:left;">Projected</th><th>2 oz</th><th>4 oz</th></tr></thead>
+          <tbody id="amzVolTable"></tbody>
+          <tfoot><tr class="total" id="amzTotalsRow"></tr></tfoot>
+        </table>
+      </div>
+
+      <!-- DTC PANEL -->
+      <div class="panel">
+        <h3 style="font-family:'Fraunces',serif;font-size:18px;margin:0 0 16px;color:var(--verdigris);">Direct-to-consumer</h3>
+        <div class="input-grid" style="grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+          <div class="field">
+            <label>Platform / processing cut</label>
+            <div class="input-row"><input type="number" id="dtcFeePct" value="5" step="0.5" min="0" max="100"><span class="suffix">%</span></div>
+          </div>
+          <div class="field">
+            <label>Average discount (codes/promos)</label>
+            <div class="input-row"><input type="number" id="dtcDiscountPct" value="10" step="0.5" min="0" max="100"><span class="suffix">%</span></div>
+          </div>
+          <div class="field">
+            <label>Your shipping cost (orders over threshold)</label>
+            <div class="input-row"><span class="prefix">$</span><input type="number" id="dtcShipCostAbove" value="14.00" step="0.25" min="0"></div>
+          </div>
+          <div class="field">
+            <label>% of orders that hit free shipping</label>
+            <div class="input-row"><input type="number" id="dtcPctFreeShip" value="80" step="5" min="0" max="100"><span class="suffix">%</span></div>
+            <div class="hint">Since orders can contain more than one unit, this is your best estimate of what share of orders cross the threshold — not a per-bottle calculation.</div>
+          </div>
+          <div class="field">
+            <label>Ad spend — per month</label>
+            <div class="input-row"><span class="prefix">$</span><input type="number" id="dtcAdSpend" value="1000" step="50" min="0"></div>
+          </div>
+          <div class="field">
+            <label>Monthly units — 2 oz</label>
+            <div class="input-row"><input type="number" id="dtcVol2oz" value="400" step="10" min="0"></div>
+          </div>
+          <div class="field">
+            <label>Monthly units — 4 oz</label>
+            <div class="input-row"><input type="number" id="dtcVol4oz" value="400" step="10" min="0"></div>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th style="text-align:left;">Per unit</th><th>2 oz</th><th>4 oz</th></tr></thead>
+          <tbody id="dtcUnitTable"></tbody>
+        </table>
+        <table style="margin-top:18px;">
+          <thead><tr><th style="text-align:left;">Projected</th><th>2 oz</th><th>4 oz</th></tr></thead>
+          <tbody id="dtcVolTable"></tbody>
+          <tfoot><tr class="total" id="dtcTotalsRow"></tr></tfoot>
+        </table>
+        <div class="result-card" style="margin-top:18px;">
+          <div class="kv"><span class="k">Combined monthly gross profit</span><span class="v" id="dtcGrossProfitOut"></span></div>
+          <div class="kv"><span class="k">Monthly ad spend</span><span class="v" id="dtcAdSpendOut"></span></div>
+          <div class="kv profit"><span class="k">Net monthly profit</span><span class="v" id="dtcNetMonthlyOut"></span></div>
+          <div class="kv profit"><span class="k">Net annual profit (×12)</span><span class="v" id="dtcNetAnnualOut"></span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 6: SCENARIO COMPARISON -->
+  <section id="sec-06">
+    <div class="section-head"><span class="section-num">06</span><h2>Compare scenarios</h2></div>
+    <p class="hint" style="margin-bottom:16px;">Scenarios marked <span class="subtag">live</span> (generated from Bulk Pricing) look up their ingredient cost fresh every time — edit a bulk price's $ or the sheet's formula %, and every scenario linked to it updates automatically, no regenerating needed. Manually-saved scenarios ("Save current scenario" below) freeze the cost at the moment you save it instead. * Amazon/DTC profit columns are always calculated live from your current channel settings (Section 05), for every scenario either way. Comparisons live in this browser tab only unless you download them below.</p>
+    <div class="panel">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+        <button class="btn btn-primary" id="btnSaveScenario">Save current scenario</button>
+        <button class="btn" id="btnClearScenarios" title="Favorites are kept — this only clears everything else">Clear all (keeps favorites)</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+        <button class="btn" id="btnDownloadScenarios">Download comparisons (.json)</button>
+        <button class="btn" id="btnUploadScenariosTrigger">Upload comparisons (.json)</button>
+        <input type="file" id="importScenariosFile" accept="application/json,.json" style="display:none;">
+        <button class="btn" id="btnCopyScenariosText">Copy as text</button>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label>Comparisons text — copy this to keep a backup anywhere, or paste a saved one here and load it</label>
+        <textarea id="scenariosText" rows="5" placeholder="Paste previously saved comparisons here, then click Load."></textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <button class="btn" id="btnLoadScenariosText">Load from text above</button>
+      </div>
+      <div id="scenarioStatus" class="hint" style="margin-bottom:12px;"></div>
+      <div class="field" style="max-width:280px;margin-bottom:14px;">
+        <label>Freeze columns through</label>
+        <div class="input-row">
+          <select id="scenarioFreezeSelect">
+            <option value="-1">None</option>
+            <option value="0">Peptide(s)</option>
+            <option value="1">GHK-Cu source</option>
+            <option value="2">AHK-Cu source</option>
+            <option value="3">Bulk size</option>
+            <option value="4">% used</option>
+            <option value="5">Ingredient $/2oz</option>
+            <option value="6">Ingredient $/4oz</option>
+            <option value="7">Amazon profit/2oz</option>
+            <option value="8">Amazon profit/4oz</option>
+            <option value="9">DTC gross/2oz</option>
+            <option value="10">DTC gross/4oz</option>
+          </select>
+        </div>
+        <div class="hint">Frozen columns stay put while you scroll the rest sideways. Shift-click a column header to sort by it as a secondary tiebreaker after the primary sort.</div>
+      </div>
+      <div class="field" style="max-width:280px;margin-bottom:10px;">
+        <label>Add a filter</label>
+        <div class="input-row">
+          <select id="scenarioFilterAddColumn">
+            <option value="">Choose a column…</option>
+          </select>
+        </div>
+      </div>
+      <div id="scenarioActiveFilters" style="display:none;margin-bottom:14px;"></div>
+      <div class="cost-table-wrap">
+        <table class="cost-table" id="scenarioTable" style="display:none;">
+          <thead>
+            <tr>
+              <th class="sortable-th" data-sort-key="peptide">Peptide(s) <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="ghkSource">GHK-Cu source <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="ahkSource">AHK-Cu source <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="bulkSize">Bulk size <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="pctUsed">% used <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="ing2oz" style="text-align:right;">Ingredient $/2oz <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="ing4oz" style="text-align:right;">Ingredient $/4oz <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="amzProfit2oz" style="text-align:right;">Amazon profit/2oz* <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="amzProfit4oz" style="text-align:right;">Amazon profit/4oz* <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="dtcGross2oz" style="text-align:right;">DTC gross/2oz* <span class="sort-indicator"></span></th>
+              <th class="sortable-th" data-sort-key="dtcGross4oz" style="text-align:right;">DTC gross/4oz* <span class="sort-indicator"></span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="scenarioTableBody"></tbody>
+        </table>
+        <div id="scenarioEmpty" class="hint">No scenarios saved yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: FAVORITE SCENARIOS -->
+  <section id="sec-07">
+    <div class="section-head"><span class="section-num">07</span><h2>Favorites</h2></div>
+    <p class="hint" style="margin-bottom:16px;">Star any scenario above (★) to shortlist it here — a focused view of the ones you're actually deciding between, independent of whatever filter or sort is set on the full table.</p>
+    <div class="panel">
+      <div class="cost-table-wrap">
+        <table class="cost-table" id="favoriteScenarioTable" style="display:none;">
+          <thead>
+            <tr>
+              <th>Peptide(s)</th>
+              <th>GHK-Cu source</th>
+              <th>AHK-Cu source</th>
+              <th>Bulk size</th>
+              <th>% used</th>
+              <th style="text-align:right;">Ingredient $/2oz</th>
+              <th style="text-align:right;">Ingredient $/4oz</th>
+              <th style="text-align:right;">Amazon profit/2oz*</th>
+              <th style="text-align:right;">Amazon profit/4oz*</th>
+              <th style="text-align:right;">DTC gross/2oz*</th>
+              <th style="text-align:right;">DTC gross/4oz*</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="favoriteScenarioTableBody"></tbody>
+        </table>
+        <div id="favoriteScenarioEmpty" class="hint">No favorites yet — star a scenario above to add it here.</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:20px;">
+      <h3 style="font-family:'Fraunces',serif;font-size:16px;margin:0 0 14px;color:var(--copper-bright);">Price points to compare</h3>
+      <p class="hint" style="margin-top:-6px;margin-bottom:14px;">Add a few retail prices to test — every favorite below gets evaluated at all of them, with everything else (fees, ROAS, discount, shipping) still pulled live from Channel Pricing.</p>
+      <div style="display:flex;gap:24px;margin-bottom:8px;">
+        <span class="hint" style="width:120px;">2oz price</span>
+        <span class="hint" style="width:120px;">4oz price</span>
+      </div>
+      <div id="pricePointTableBody"></div>
+      <button class="btn" id="btnAddPricePoint" style="margin-top:12px;">+ Add price point</button>
+    </div>
+
+    <div class="panel" style="margin-top:20px;">
+      <h3 style="font-family:'Fraunces',serif;font-size:16px;margin:0 0 14px;color:var(--copper-bright);">Breakdown by price point</h3>
+      <div class="cost-table-wrap">
+        <table class="cost-table" id="favoriteBreakdownTable" style="display:none;">
+          <thead>
+            <tr>
+              <th>Peptide(s)</th>
+              <th>Bulk size</th>
+              <th>% used</th>
+              <th style="text-align:right;">Retail 2oz</th>
+              <th style="text-align:right;">Retail 4oz</th>
+              <th style="text-align:right;">Amazon profit/2oz</th>
+              <th style="text-align:right;">Amazon profit/4oz</th>
+              <th style="text-align:right;">DTC gross/2oz</th>
+              <th style="text-align:right;">DTC gross/4oz</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="favoriteBreakdownTableBody"></tbody>
+        </table>
+        <div id="favoriteBreakdownEmpty" class="hint">Add at least one favorite (★) and one price point above to see a breakdown.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>All figures are estimates for planning purposes — not accounting or tax advice.</footer>
+</div>
+
+<script>
+const OZ_2_ML = 59.1471;
+const OZ_4_ML = 118.2941;
+
+// unit -> mL (direct volume units)
+const VOLUME_UNITS = { 'mL':1, 'L':1000, 'fl oz':29.5735, 'gal':3785.41 };
+// unit -> g (weight units, need density to become mL)
+const WEIGHT_UNITS = { 'g':1, 'kg':1000, 'oz (wt)':28.3495, 'lb':453.592 };
+const ALL_UNITS = Object.keys(VOLUME_UNITS).concat(Object.keys(WEIGHT_UNITS));
+
+const INGREDIENTS = [
+  { key:'panthenol', label:'Panthenol (B5)',   color:'var(--panthenol-color)', type:'base', checked:true, price:82, qty:2, unit:'lb', density:1.0 },
+  { key:'niacin',  label:'Niacinamide',      color:'var(--niacin-color)', type:'base', checked:true, price:32,  qty:1, unit:'lb', density:1.0 },
+  { key:'phenoxyethanol', label:'Phenoxyethanol', color:'var(--phenoxy-color)', type:'base', checked:true, price:9, qty:8, unit:'fl oz', density:1.0 },
+  { key:'ethoxydiglycol', label:'Ethoxydiglycol', color:'var(--ethoxy-color)', type:'base', checked:true, price:8, qty:4, unit:'fl oz', density:1.0 },
+  { key:'water',   label:'Water',            color:'var(--water-color)', type:'base', checked:true, price:5, qty:1, unit:'L', density:1.0 }
+];
+
+// GHK-Cu/AHK-Cu live exclusively in Bulk Pricing (Section 05b) now — this is their reference
+// list for that table's ingredient dropdown, and for looking up a label/color/peptide/type
+// from a bulk-price entry's ingredientKey.
+const BULK_PEPTIDE_OPTIONS = [
+  { key:'ghk_liquid', label:'GHK-Cu liquid stock', color:'var(--ghk-color)', peptide:'ghk', type:'liquid' },
+  { key:'ghk_powder',  label:'GHK-Cu powder',       color:'var(--ghk-color)', peptide:'ghk', type:'powder' },
+  { key:'ahk_liquid',  label:'AHK-Cu liquid stock', color:'var(--ahk-color)', peptide:'ahk', type:'liquid' },
+  { key:'ahk_powder',  label:'AHK-Cu powder',       color:'var(--ahk-color)', peptide:'ahk', type:'powder' }
+];
+function bulkPeptideDef(key){ return BULK_PEPTIDE_OPTIONS.find(x => x.key === key); }
+
+function unitOptions(selected){
+  return ALL_UNITS.map(u => `<option value="${u}" ${u===selected?'selected':''}>${u}</option>`).join('');
+}
+
+function buildIngredientRows(){
+  const body = document.getElementById('ingredientCostBody');
+  body.innerHTML = INGREDIENTS.map(ing => `
+    <tr data-key="${ing.key}" data-type="${ing.type}">
+      <td class="ing-checkbox-cell"><input type="checkbox" class="ing-checkbox" ${ing.checked?'checked':''}></td>
+      <td><div class="ing-name"><span class="dot" style="background:${ing.color}"></span>${ing.label}</div></td>
+      <td class="cell-input"><div class="input-row"><span class="prefix">$</span><input type="number" class="ing-price" value="${ing.price}" step="0.01" min="0"></div></td>
+      <td class="cell-input"><div class="input-row"><input type="number" class="ing-qty" value="${ing.qty}" step="0.1" min="0"></div></td>
+      <td class="cell-input"><select class="ing-unit">${unitOptions(ing.unit)}</select></td>
+      <td class="cell-input"><div class="input-row"><input type="number" class="ing-density" value="${ing.density}" step="0.01" min="0.01"></div></td>
+      <td style="text-align:right;"><span class="computed-rate" data-rate="${ing.key}">—</span></td>
+    </tr>
+  `).join('');
+
+  body.querySelectorAll('input, select').forEach(el => el.addEventListener('input', recalc));
+  body.querySelectorAll('.ing-checkbox').forEach(cb => cb.addEventListener('change', recalc));
+}
+
+function computeCostPerMl(row){
+  const price = parseFloat(row.querySelector('.ing-price').value) || 0;
+  const qty = parseFloat(row.querySelector('.ing-qty').value) || 0;
+  const unit = row.querySelector('.ing-unit').value;
+  const density = parseFloat(row.querySelector('.ing-density').value) || 1;
+
+  let mlEquivalent = 0;
+  if (VOLUME_UNITS[unit] !== undefined){
+    mlEquivalent = qty * VOLUME_UNITS[unit];
+  } else if (WEIGHT_UNITS[unit] !== undefined){
+    const grams = qty * WEIGHT_UNITS[unit];
+    mlEquivalent = grams / density;
+  }
+  const isWeight = WEIGHT_UNITS[unit] !== undefined;
+  // toggle density field usefulness visually
+  const densityCell = row.querySelector('.ing-density').closest('td');
+  densityCell.style.opacity = isWeight ? '1' : '0.35';
+  row.querySelector('.ing-density').disabled = !isWeight;
+
+  if (mlEquivalent <= 0) return 0;
+  return price / mlEquivalent;
+}
+
+function fmtMoney2(n){ return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtRate(n, perGram){
+  const unit = perGram ? '/g' : '/mL';
+  if (n < 0.001 && n > 0) return '$' + n.toLocaleString('en-US', {minimumFractionDigits:5, maximumFractionDigits:5}) + unit;
+  return '$' + n.toLocaleString('en-US', {minimumFractionDigits:4, maximumFractionDigits:4}) + unit;
+}
+
+function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
+function fmtSigned(n){ return (n<0?'-':'') + '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+// Computes per-unit economics for one bottle size on Amazon.
+function unitEconomics(retail, cogs, feePct, roas){
+  const platformFee = retail * (feePct/100);
+  const adSpend = roas > 0 ? (retail / roas) : 0;
+  const profit = retail - cogs - platformFee - adSpend;
+  const margin = retail > 0 ? (profit/retail*100) : 0;
+  return { retail, cogs, platformFee, adSpend, profit, margin };
+}
+
+// Computes per-unit economics for one bottle size on DTC (discount + shipping, no per-unit ad cost).
+function unitEconomicsDtc(retail, cogs, feePct, discountPct, shipping){
+  const netPrice = retail * (1 - discountPct/100);
+  const platformFee = netPrice * (feePct/100);
+  const grossProfit = netPrice - cogs - platformFee - shipping;
+  const grossMargin = retail > 0 ? (grossProfit/retail*100) : 0;
+  return { retail, netPrice, cogs, platformFee, shipping, grossProfit, grossMargin };
+}
+
+// Names the bulk price(s) actually driving the live sheet — since GHK-Cu/AHK-Cu no longer have
+// rows in the ingredient table, this is the only place that tells you which Active selection
+// in Bulk Pricing is feeding "current sheet formula" in Channel Pricing.
+function describeActiveBulkPrices(){
+  const parts = [];
+  ['ghk', 'ahk'].forEach(peptide => {
+    const finalPct = num(peptide === 'ghk' ? 'ghkFinalPct' : 'ahkFinalPct');
+    if (finalPct <= 0) return;
+    const active = bulkPrices.find(b => b.ingredientKey.startsWith(peptide + '_') && b.active);
+    const label = peptide === 'ghk' ? 'GHK-Cu' : 'AHK-Cu';
+    if (active){
+      parts.push(label + ': ' + active.qty + active.unit + ' @ $' + active.price + (active.notes ? ' (' + active.notes + ')' : ''));
+    } else {
+      parts.push(label + ': no active bulk price set');
+    }
+  });
+  return parts.length ? '"current sheet formula" — ' + parts.join(', ') : '"current sheet formula" (no peptide active)';
+}
+
+function getPackagingCosts(){
+  const bottle2 = num('bottle2ozCost'), bottle4 = num('bottle4ozCost');
+  const box2 = num('box2ozCost'), box4 = num('box4ozCost');
+  const misc2 = num('misc2ozCost'), misc4 = num('misc4ozCost');
+  return { pkg2oz: bottle2+box2+misc2, pkg4oz: bottle4+box4+misc4 };
+}
+
+function getDtcAvgShipCost(){
+  // Blended average: X% of orders trigger the higher shipping cost, regardless of which
+  // bottle size is in the order (since orders can mix units and cross the threshold together).
+  return (num('dtcPctFreeShip')/100) * num('dtcShipCostAbove');
+}
+
+function recalc(skipBulkRender){
+  // ---- Ingredient cost conversion (panthenol/niacin/phenoxyethanol/ethoxydiglycol/water only — GHK-Cu/AHK-Cu live in Bulk Pricing) ----
+  const rateMap = {};   // $/mL
+  const densityMap = {};
+  const unitMap = {};
+  document.querySelectorAll('#ingredientCostBody tr').forEach(row => {
+    const key = row.getAttribute('data-key');
+    const rate = computeCostPerMl(row);
+    rateMap[key] = rate;
+    densityMap[key] = parseFloat(row.querySelector('.ing-density').value) || 1;
+    unitMap[key] = row.querySelector('.ing-unit').value;
+    row.querySelector('.computed-rate').textContent = fmtRate(rate, false);
+  });
+
+  // Converts an amount from its natural unit (mL for volume-based, g for weight-based) into
+  // whatever unit that ingredient is actually purchased in — so "need in stock" always matches
+  // the unit on the supplier invoice, not just a generic mL/g figure.
+  function convertToPurchaseUnit(amount, amountIsGrams, density, targetUnit){
+    const grams = amountIsGrams ? amount : amount * density;
+    const mL = amountIsGrams ? amount / density : amount;
+    if (WEIGHT_UNITS[targetUnit] !== undefined) return grams / WEIGHT_UNITS[targetUnit];
+    if (VOLUME_UNITS[targetUnit] !== undefined) return mL / VOLUME_UNITS[targetUnit];
+    return amount;
+  }
+  function stockLabel(amount, amountIsGrams, density, unit){
+    const converted = convertToPurchaseUnit(amount, amountIsGrams, density, unit);
+    return converted.toFixed(3) + ' ' + unit;
+  }
+
+  // ---- Formula percentages ----
+  const panthenolPct = parseFloat(document.getElementById('panthenolPct').value) || 0;
+  const niacinPct  = parseFloat(document.getElementById('niacinPct').value) || 0;
+  const phenoxyPct = parseFloat(document.getElementById('phenoxyPct').value) || 0;
+  const ethoxyPct  = parseFloat(document.getElementById('ethoxyPct').value) || 0;
+  const ghkFinalPct = parseFloat(document.getElementById('ghkFinalPct').value) || 0;
+  const ahkFinalPct = parseFloat(document.getElementById('ahkFinalPct').value) || 0;
+
+  // Computes a peptide's contribution (cost + volume displaced) for a given volume of product (mL),
+  // using whichever bulk-price entry is marked "active" for that peptide — GHK-Cu/AHK-Cu no longer
+  // have rows in the ingredient table above, so Bulk Pricing (05b) is their only source now.
+  // Liquid stock displaces batch volume (you're pouring liquid in); powder does not (a few grams
+  // dissolved into the water phase doesn't meaningfully change volume).
+  function peptideContribution(finalPct, peptideKey, volumeMl){
+    // A peptide at 0% isn't "used" even if a bulk price is marked Active for it — the Active
+    // checkbox only says which SOURCE would be used if this peptide were included; the % dial
+    // is what actually decides whether it's in the formula at all.
+    if (!finalPct || finalPct <= 0) return { cost: 0, volumeMl: 0, amountLabel: '—', stockLabel: '—', source: 'not used' };
+    const activeEntry = bulkPrices.find(b => b.ingredientKey.startsWith(peptideKey + '_') && b.active);
+    if (!activeEntry) return { cost: 0, volumeMl: 0, amountLabel: '—', stockLabel: '—', source: 'not used' };
+    const def = bulkPeptideDef(activeEntry.ingredientKey);
+    const cost = bulkBottleCost(activeEntry, volumeMl);
+    const entryDensity = parseFloat(activeEntry.density) || 1;
+    if (def.type === 'liquid'){
+      const stockConc = activeEntry.extra || 10;
+      const activeGrams = (finalPct/100) * volumeMl;
+      const mlNeeded = stockConc > 0 ? (activeGrams * 100 / stockConc) : 0;
+      const stockLbl = convertToPurchaseUnit(mlNeeded, false, entryDensity, activeEntry.unit).toFixed(3) + ' ' + activeEntry.unit;
+      return { cost, volumeMl: mlNeeded, amountLabel: mlNeeded.toFixed(2) + ' mL', stockLabel: stockLbl, source: 'liquid stock' };
+    }
+    const purity = activeEntry.extra || 99;
+    const activeGrams = (finalPct/100) * volumeMl;
+    const gramsNeeded = purity > 0 ? (activeGrams / (purity/100)) : 0;
+    const stockLbl = convertToPurchaseUnit(gramsNeeded, true, entryDensity, activeEntry.unit).toFixed(3) + ' ' + activeEntry.unit;
+    return { cost, volumeMl: 0, amountLabel: gramsNeeded.toFixed(3) + ' g', stockLabel: stockLbl, source: 'powder' };
+  }
+
+  const batchVolume = num('batchVolume') || 1000;
+  const ghkAtBatch = peptideContribution(ghkFinalPct, 'ghk', batchVolume);
+  const ahkAtBatch = peptideContribution(ahkFinalPct, 'ahk', batchVolume);
+  const ghkVolPct = batchVolume > 0 ? (ghkAtBatch.volumeMl / batchVolume * 100) : 0;
+  const ahkVolPct = batchVolume > 0 ? (ahkAtBatch.volumeMl / batchVolume * 100) : 0;
+
+  let waterPct = 100 - panthenolPct - niacinPct - phenoxyPct - ethoxyPct - ghkVolPct - ahkVolPct;
+
+  const ghkHint = document.getElementById('ghkHint');
+  const ahkHint = document.getElementById('ahkHint');
+  const waterHint = document.getElementById('waterHint');
+  ghkHint.textContent = ghkAtBatch.source === 'not used'
+    ? 'No active GHK-Cu source in Bulk Pricing below — mark one "Active" there'
+    : `Needs ${ghkAtBatch.amountLabel} of ${ghkAtBatch.source} per ${batchVolume.toLocaleString()} mL batch`;
+  ahkHint.textContent = ahkAtBatch.source === 'not used'
+    ? 'No active AHK-Cu source in Bulk Pricing below — mark one "Active" there'
+    : `Needs ${ahkAtBatch.amountLabel} of ${ahkAtBatch.source} per ${batchVolume.toLocaleString()} mL batch`;
+
+  if (waterPct < 0){
+    waterHint.textContent = 'Formula exceeds 100% — reduce another ingredient.';
+    waterHint.classList.add('warn');
+  } else {
+    waterHint.textContent = '';
+    waterHint.classList.remove('warn');
+  }
+  document.getElementById('waterPct').value = waterPct.toFixed(1);
+  const waterPctClamped = Math.max(waterPct, 0);
+
+  // ---- Ratio bar (liquid-displacing ingredients only — powder doesn't show as a volume slice) ----
+  const segs = [
+    {label:'Panthenol', pct:panthenolPct, color:'var(--panthenol-color)'},
+    {label:'Niacinamide', pct:niacinPct, color:'var(--niacin-color)'},
+    {label:'Phenoxyethanol', pct:phenoxyPct, color:'var(--phenoxy-color)'},
+    {label:'Ethoxydiglycol', pct:ethoxyPct, color:'var(--ethoxy-color)'},
+    {label:'GHK-Cu liquid', pct:ghkVolPct, color:'var(--ghk-color)'},
+    {label:'AHK-Cu liquid', pct:ahkVolPct, color:'var(--ahk-color)'},
+    {label:'Water', pct:waterPctClamped, color:'var(--water-color)'}
+  ].filter(s => s.pct > 0 || s.label==='Water' || s.label==='Panthenol' || s.label==='Niacinamide');
+  const bar = document.getElementById('ratioBar');
+  bar.innerHTML = segs.map(s => `<div class="ratio-seg" style="width:${s.pct}%;background:${s.color};">${s.pct>=8?s.pct.toFixed(0)+'%':''}</div>`).join('');
+  document.getElementById('legend').innerHTML = segs.map(s =>
+    `<div class="legend-item"><span class="swatch" style="background:${s.color}"></span>${s.label} — ${s.pct.toFixed(1)}%</div>`
+  ).join('');
+
+  // Powder-form peptides don't get a bar segment (no meaningful volume change), but changing
+  // their % is still doing something — show it here so that isn't invisible.
+  const powderNotes = [];
+  if (ghkAtBatch.source === 'powder') powderNotes.push(`<div class="legend-item"><span class="swatch" style="background:var(--ghk-color)"></span>GHK-Cu powder — ${ghkAtBatch.amountLabel} (doesn't show as bar width)</div>`);
+  if (ahkAtBatch.source === 'powder') powderNotes.push(`<div class="legend-item"><span class="swatch" style="background:var(--ahk-color)"></span>AHK-Cu powder — ${ahkAtBatch.amountLabel} (doesn't show as bar width)</div>`);
+  const powderNoteEl = document.getElementById('powderNote');
+  if (powderNoteEl) powderNoteEl.innerHTML = powderNotes.join('');
+
+  // ---- Batch table ----
+  document.getElementById('batchTableHeader').textContent = batchVolume.toLocaleString() + ' mL batch recipe';
+  document.getElementById('batchTotalLabel').textContent = 'Total (' + batchVolume.toLocaleString() + ' mL)';
+
+  const baseRows = [
+    {name:'Panthenol', amountLabel: (panthenolPct/100*batchVolume*(densityMap['panthenol']||1)).toFixed(2)+' g', stock: stockLabel(panthenolPct/100*batchVolume, false, densityMap['panthenol']||1, unitMap['panthenol']||'g'), cost: panthenolPct/100*batchVolume*(rateMap['panthenol']||0)},
+    {name:'Niacinamide', amountLabel: (niacinPct/100*batchVolume*(densityMap['niacin']||1)).toFixed(2)+' g', stock: stockLabel(niacinPct/100*batchVolume, false, densityMap['niacin']||1, unitMap['niacin']||'g'), cost: niacinPct/100*batchVolume*(rateMap['niacin']||0)},
+    {name:'Phenoxyethanol', amountLabel: (phenoxyPct/100*batchVolume*(densityMap['phenoxyethanol']||1)).toFixed(2)+' g', stock: stockLabel(phenoxyPct/100*batchVolume, false, densityMap['phenoxyethanol']||1, unitMap['phenoxyethanol']||'g'), cost: phenoxyPct/100*batchVolume*(rateMap['phenoxyethanol']||0)},
+    {name:'Ethoxydiglycol', amountLabel: (ethoxyPct/100*batchVolume*(densityMap['ethoxydiglycol']||1)).toFixed(2)+' g', stock: stockLabel(ethoxyPct/100*batchVolume, false, densityMap['ethoxydiglycol']||1, unitMap['ethoxydiglycol']||'g'), cost: ethoxyPct/100*batchVolume*(rateMap['ethoxydiglycol']||0)},
+    {name:'GHK-Cu (' + ghkAtBatch.source + ')', amountLabel: ghkAtBatch.amountLabel, stock: ghkAtBatch.stockLabel, cost: ghkAtBatch.cost},
+    {name:'AHK-Cu (' + ahkAtBatch.source + ')', amountLabel: ahkAtBatch.amountLabel, stock: ahkAtBatch.stockLabel, cost: ahkAtBatch.cost},
+    {name:'Water', amountLabel: (waterPctClamped/100*batchVolume).toFixed(1)+' mL', stock: stockLabel(waterPctClamped/100*batchVolume, false, densityMap['water']||1, unitMap['water']||'L'), cost: waterPctClamped/100*batchVolume*(rateMap['water']||0)}
+  ];
+
+  let totalCostBatch = 0;
+  const batchBody = document.getElementById('batchTableBody');
+  batchBody.innerHTML = baseRows.map(r => {
+    totalCostBatch += r.cost;
+    return `<tr><td>${r.name}</td><td>—</td><td>${r.amountLabel}</td><td>${r.stock}</td><td>${fmtMoney2(r.cost)}</td></tr>`;
+  }).join('');
+  document.getElementById('batchTotalMl').textContent = batchVolume.toLocaleString() + ' mL';
+  document.getElementById('batchTotalCost').textContent = fmtMoney2(totalCostBatch);
+
+  // ---- Per-bottle ingredient cost (computed independently per size — powder scales by volume too, just without displacing liquid) ----
+  function bottleIngredientCost(bottleMl){
+    const ghkB = peptideContribution(ghkFinalPct, 'ghk', bottleMl);
+    const ahkB = peptideContribution(ahkFinalPct, 'ahk', bottleMl);
+    const panthenolCost = panthenolPct/100*bottleMl*(rateMap['panthenol']||0);
+    const niacinCost = niacinPct/100*bottleMl*(rateMap['niacin']||0);
+    const phenoxyCost = phenoxyPct/100*bottleMl*(rateMap['phenoxyethanol']||0);
+    const ethoxyCost = ethoxyPct/100*bottleMl*(rateMap['ethoxydiglycol']||0);
+    const waterCost = waterPctClamped/100*bottleMl*(rateMap['water']||0);
+    return {
+      rows: [
+        {name:'Panthenol', cost: panthenolCost},
+        {name:'Niacinamide', cost: niacinCost},
+        {name:'Phenoxyethanol', cost: phenoxyCost},
+        {name:'Ethoxydiglycol', cost: ethoxyCost},
+        {name:'GHK-Cu', cost: ghkB.cost},
+        {name:'AHK-Cu', cost: ahkB.cost},
+        {name:'Water', cost: waterCost}
+      ],
+      components: { panthenol: panthenolCost, niacin: niacinCost, phenoxyethanol: phenoxyCost, ethoxydiglycol: ethoxyCost, ghk: ghkB.cost, ahk: ahkB.cost, water: waterCost },
+      total: panthenolCost + niacinCost + phenoxyCost + ethoxyCost + ghkB.cost + ahkB.cost + waterCost
+    };
+  }
+
+  const b2 = bottleIngredientCost(OZ_2_ML);
+  const b4 = bottleIngredientCost(OZ_4_ML);
+  const ing2oz = b2.total;
+  const ing4oz = b4.total;
+
+  const bottleBody = document.getElementById('bottleIngredientBody');
+  bottleBody.innerHTML = b2.rows.map((r, i) => {
+    return `<tr><td>${r.name}</td><td>${fmtMoney2(r.cost)}</td><td>${fmtMoney2(b4.rows[i].cost)}</td></tr>`;
+  }).join('') + `<tr class="total"><td>Total ingredient cost</td><td>${fmtMoney2(ing2oz)}</td><td>${fmtMoney2(ing4oz)}</td></tr>`;
+
+  // ---- Packaging ----
+  const { pkg2oz, pkg4oz } = getPackagingCosts();
+  document.getElementById('pkgTotal2oz').textContent = fmtMoney2(pkg2oz);
+  document.getElementById('pkgTotal4oz').textContent = fmtMoney2(pkg4oz);
+
+  // ---- COGS per size (ingredient + packaging) ----
+  // The Channel Pricing section (05) can price against a saved/generated scenario instead of
+  // the live sheet — pick it via the "Ingredient cost basis" dropdown there.
+  const basisSelect = document.getElementById('scenarioBasisSelect');
+  let basisIng2oz = ing2oz, basisIng4oz = ing4oz;
+  let basisLabel = describeActiveBulkPrices();
+  if (basisSelect && basisSelect.value && basisSelect.value !== 'live'){
+    const chosen = scenarios.find(s => s.id === basisSelect.value);
+    if (chosen){
+      const chosenCost = computeScenarioIngCost(chosen);
+      basisIng2oz = chosenCost.ing2oz;
+      basisIng4oz = chosenCost.ing4oz;
+      basisLabel = chosen.name;
+    }
+  }
+  const basisHint = document.getElementById('scenarioBasisHint');
+  if (basisHint) basisHint.textContent = 'Using ingredient cost: ' + fmtMoney2(basisIng2oz) + '/2oz, ' + fmtMoney2(basisIng4oz) + '/4oz — from ' + basisLabel;
+
+  const cogs2oz = basisIng2oz + pkg2oz;
+  const cogs4oz = basisIng4oz + pkg4oz;
+
+  function buildUnitTable(e2, e4, feeLabel){
+    const rows = [
+      ['Retail price', fmtMoney2(e2.retail), fmtMoney2(e4.retail)],
+      ['Ingredient + packaging', fmtMoney2(e2.cogs), fmtMoney2(e4.cogs)],
+      [feeLabel, fmtMoney2(e2.platformFee), fmtMoney2(e4.platformFee)],
+      ['Ad spend (from ROAS)', fmtMoney2(e2.adSpend), fmtMoney2(e4.adSpend)],
+    ];
+    let html = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+    html += `<tr class="total"><td>Profit / unit</td><td>${fmtSigned(e2.profit)}</td><td>${fmtSigned(e4.profit)}</td></tr>`;
+    html += `<tr><td>Margin</td><td>${e2.margin.toFixed(1)}%</td><td>${e4.margin.toFixed(1)}%</td></tr>`;
+    return html;
+  }
+
+  function buildVolumeTable(e2, e4, vol2, vol4){
+    const monthlyProfit2 = e2.profit*vol2, monthlyProfit4 = e4.profit*vol4;
+    const monthlyRev2 = e2.retail*vol2, monthlyRev4 = e4.retail*vol4;
+    const rows = [
+      ['Monthly units', vol2.toLocaleString(), vol4.toLocaleString()],
+      ['Monthly revenue', fmtMoney2(monthlyRev2), fmtMoney2(monthlyRev4)],
+      ['Monthly profit', fmtSigned(monthlyProfit2), fmtSigned(monthlyProfit4)],
+      ['Annual profit (×12)', fmtSigned(monthlyProfit2*12), fmtSigned(monthlyProfit4*12)],
+    ];
+    const combinedMonthly = monthlyProfit2 + monthlyProfit4;
+    return {
+      body: rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join(''),
+      totalsRow: `<td>Combined annual profit</td><td colspan="2" style="text-align:center;">${fmtSigned(combinedMonthly*12)}</td>`
+    };
+  }
+
+  // ---- Amazon channel (ROAS-based per-unit ad cost) ----
+  const sharedRetail2 = num('retail2oz');
+  const sharedRetail4 = num('retail4oz');
+
+  const amzE2 = unitEconomics(sharedRetail2, cogs2oz, num('amzFeePct'), num('amzRoas'));
+  const amzE4 = unitEconomics(sharedRetail4, cogs4oz, num('amzFeePct'), num('amzRoas'));
+  document.getElementById('amzUnitTable').innerHTML = buildUnitTable(amzE2, amzE4, 'Amazon cut');
+  const amzVolResult = buildVolumeTable(amzE2, amzE4, num('amzVol2oz'), num('amzVol4oz'));
+  document.getElementById('amzVolTable').innerHTML = amzVolResult.body;
+  document.getElementById('amzTotalsRow').innerHTML = amzVolResult.totalsRow;
+
+  // ---- DTC channel (flat monthly ad budget, discount & shipping, not per-unit ad) ----
+  function buildDtcUnitTable(e2, e4){
+    const rows = [
+      ['Retail price', fmtMoney2(e2.retail), fmtMoney2(e4.retail)],
+      ['Price after discount', fmtMoney2(e2.netPrice), fmtMoney2(e4.netPrice)],
+      ['Ingredient + packaging', fmtMoney2(e2.cogs), fmtMoney2(e4.cogs)],
+      ['Platform / processing cut', fmtMoney2(e2.platformFee), fmtMoney2(e4.platformFee)],
+      ['Shipping (avg. cost you absorb)', fmtMoney2(e2.shipping), fmtMoney2(e4.shipping)],
+    ];
+    let html = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+    html += `<tr class="total"><td>Gross profit / unit</td><td>${fmtSigned(e2.grossProfit)}</td><td>${fmtSigned(e4.grossProfit)}</td></tr>`;
+    html += `<tr><td>Gross margin (of retail)</td><td>${e2.grossMargin.toFixed(1)}%</td><td>${e4.grossMargin.toFixed(1)}%</td></tr>`;
+    return html;
+  }
+
+  const dtcAvgShipCost = getDtcAvgShipCost();
+  const dtcE2 = unitEconomicsDtc(sharedRetail2, cogs2oz, num('dtcFeePct'), num('dtcDiscountPct'), dtcAvgShipCost);
+  const dtcE4 = unitEconomicsDtc(sharedRetail4, cogs4oz, num('dtcFeePct'), num('dtcDiscountPct'), dtcAvgShipCost);
+  document.getElementById('dtcUnitTable').innerHTML = buildDtcUnitTable(dtcE2, dtcE4);
+
+  const dtcVol2 = num('dtcVol2oz'), dtcVol4 = num('dtcVol4oz');
+  const dtcMonthlyRev2 = dtcE2.netPrice*dtcVol2, dtcMonthlyRev4 = dtcE4.netPrice*dtcVol4;
+  const dtcMonthlyGross2 = dtcE2.grossProfit*dtcVol2, dtcMonthlyGross4 = dtcE4.grossProfit*dtcVol4;
+  document.getElementById('dtcVolTable').innerHTML = [
+    ['Monthly units', dtcVol2.toLocaleString(), dtcVol4.toLocaleString()],
+    ['Monthly revenue (after discount)', fmtMoney2(dtcMonthlyRev2), fmtMoney2(dtcMonthlyRev4)],
+    ['Monthly gross profit', fmtSigned(dtcMonthlyGross2), fmtSigned(dtcMonthlyGross4)],
+  ].map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  document.getElementById('dtcTotalsRow').innerHTML = `<td>Combined monthly units</td><td colspan="2" style="text-align:center;">${(dtcVol2+dtcVol4).toLocaleString()}</td>`;
+
+  const dtcCombinedGross = dtcMonthlyGross2 + dtcMonthlyGross4;
+  const dtcAdSpend = num('dtcAdSpend');
+  const dtcNetMonthly = dtcCombinedGross - dtcAdSpend;
+  document.getElementById('dtcGrossProfitOut').textContent = fmtSigned(dtcCombinedGross);
+  document.getElementById('dtcAdSpendOut').textContent = fmtMoney2(dtcAdSpend);
+  document.getElementById('dtcNetMonthlyOut').textContent = fmtSigned(dtcNetMonthly);
+  document.getElementById('dtcNetAnnualOut').textContent = fmtSigned(dtcNetMonthly*12);
+
+  // Expose this formula's ingredient cost for the scenario-comparison table below —
+  // profit numbers are NOT frozen here; they're computed live in renderScenarios()
+  // using whatever the current channel settings are, so adjusting DTC/Amazon inputs
+  // updates every saved scenario at once.
+  window.lastCalc = {
+    ing2oz, ing4oz,
+    ghkSource: ghkAtBatch.source, ahkSource: ahkAtBatch.source,
+    components2oz: b2.components, components4oz: b4.components
+  };
+  if (typeof renderScenarios === 'function') renderScenarios();
+  // Skipped when recalc() was triggered by editing a single bulk-price row's own field — that
+  // row's cells are already patched via updateBulkRowComputed(), and no OTHER row's numbers
+  // depend on it, so a full rebuild here would just steal focus from whatever's being typed.
+  if (!skipBulkRender && typeof renderBulkPrices === 'function') renderBulkPrices();
+}
+
+document.querySelectorAll('#batchVolume, #panthenolPct, #niacinPct, #phenoxyPct, #ethoxyPct, #ghkFinalPct, #ahkFinalPct, #bottle2ozCost, #bottle4ozCost, #box2ozCost, #box4ozCost, #misc2ozCost, #misc4ozCost, #retail2oz, #retail4oz, #amzFeePct, #amzRoas, #amzVol2oz, #amzVol4oz, #dtcFeePct, #dtcDiscountPct, #dtcShipCostAbove, #dtcPctFreeShip, #dtcAdSpend, #dtcVol2oz, #dtcVol4oz')
+  .forEach(el => {
+    el.addEventListener('input', recalc);
+    el.addEventListener('change', recalc); // safety net: some mobile keyboards only fire 'change' on blur, not 'input' per keystroke
+    el.addEventListener('blur', recalc);   // extra safety net for the same class of mobile quirk
+  });
+// Direct, redundant binding specifically for the two % fields the Bulk Pricing table's own
+// $/2oz, $/4oz, and Bottles columns depend on — forces that table to refresh even if something
+// upstream in the shared recalc() chain doesn't reach it for any reason.
+document.querySelectorAll('#ghkFinalPct, #ahkFinalPct').forEach(el => {
+  ['input','change','blur'].forEach(evt => el.addEventListener(evt, function(){
+    if (typeof renderBulkPrices === 'function') renderBulkPrices();
+  }));
+});
+
+// Batch volume ↔ bottle count: editing batch volume directly re-splits the two boxes 50/50 by
+// volume (live). Editing the bottle-count boxes only takes effect once "Apply" is clicked,
+// which pushes a new batch volume back in — so typing in both boxes doesn't fight itself.
+function updateSuggestedBottleCounts(){
+  const vol = num('batchVolume') || 1000;
+  const half = vol / 2;
+  document.getElementById('batchBottles2oz').value = Math.floor(half / OZ_2_ML);
+  document.getElementById('batchBottles4oz').value = Math.floor(half / OZ_4_ML);
+}
+document.querySelectorAll('#batchVolume').forEach(el => {
+  ['input','change','blur'].forEach(evt => el.addEventListener(evt, updateSuggestedBottleCounts));
+});
+document.getElementById('btnApplyBottleCounts').addEventListener('click', function(){
+  const b2 = parseFloat(document.getElementById('batchBottles2oz').value) || 0;
+  const b4 = parseFloat(document.getElementById('batchBottles4oz').value) || 0;
+  const newVolume = b2 * OZ_2_ML + b4 * OZ_4_ML;
+  document.getElementById('batchVolume').value = newVolume.toFixed(1);
+  recalc(); // update the rest of the sheet — deliberately does NOT call updateSuggestedBottleCounts(),
+            // so the boxes keep showing exactly the counts just applied, not a fresh 50/50 guess.
+});
+updateSuggestedBottleCounts(); // initial 50/50 split of the default 1000 mL batch
+
+document.getElementById('scenarioBasisSelect').addEventListener('change', recalc);
+document.querySelectorAll('.sortable-th').forEach(th => {
+  th.addEventListener('click', function(e){
+    sortScenariosBy(this.getAttribute('data-sort-key'), e.shiftKey);
+  });
+});
+document.getElementById('scenarioFreezeSelect').addEventListener('change', function(){
+  const idx = parseInt(this.value, 10);
+  scenarioFreezeCount = idx < 0 ? 0 : idx + 1;
+  applyScenarioFreeze();
+});
+document.getElementById('bulkFreezeSelect').addEventListener('change', function(){
+  const idx = parseInt(this.value, 10);
+  bulkFreezeCount = idx < 0 ? 0 : idx + 1;
+  applyBulkFreeze();
+});
+document.getElementById('scenarioFilterAddColumn').addEventListener('change', function(){
+  const col = this.value;
+  if (!col) return;
+  if (!scenarioActiveFilterColumns.includes(col)) scenarioActiveFilterColumns.push(col);
+  if (!scenarioFilterHidden[col]) scenarioFilterHidden[col] = new Set();
+  this.value = '';
+  renderScenarios();
+});
+window.addEventListener('resize', function(){
+  if (scenarioFreezeCount > 0) applyScenarioFreeze();
+  if (bulkFreezeCount > 0) applyBulkFreeze();
+});
+
+// Scenario comparisons — declared early since recalc() (called below) triggers renderScenarios(),
+// which needs this to exist.
+let scenarios = [];
+let scenarioSortLevels = []; // [{key, dir}, ...] — first entry is primary sort, rest are tiebreakers
+let scenarioFreezeCount = 0;
+let bulkFreezeCount = 0;
+let scenarioActiveFilterColumns = []; // ordered list of column keys currently being filtered
+let scenarioFilterHidden = {}; // column key -> Set of hidden values (categorical columns)
+let scenarioFilterRange = {}; // column key -> {min, max} (numeric $ columns)
+let favoritePricePoints = []; // {retail2, retail4} — tested against every starred scenario
+const FILTERABLE_COLUMNS = [
+  { key:'peptide', label:'Peptide(s)', type:'categorical' },
+  { key:'ghkSource', label:'GHK-Cu source', type:'categorical' },
+  { key:'ahkSource', label:'AHK-Cu source', type:'categorical' },
+  { key:'bulkSize', label:'Bulk size', type:'categorical' },
+  { key:'pctUsed', label:'% used', type:'categorical' },
+  { key:'ing2oz', label:'Ingredient $/2oz', type:'range' },
+  { key:'ing4oz', label:'Ingredient $/4oz', type:'range' },
+  { key:'amzProfit2oz', label:'Amazon profit/2oz', type:'range' },
+  { key:'amzProfit4oz', label:'Amazon profit/4oz', type:'range' },
+  { key:'dtcGross2oz', label:'DTC gross/2oz', type:'range' },
+  { key:'dtcGross4oz', label:'DTC gross/4oz', type:'range' }
+];
+let scenarioIdCounter = 1;
+function nextScenarioId(){ return 'sc' + (scenarioIdCounter++); }
+let bulkPriceIdCounter = 1;
+function nextBulkPriceId(){ return 'bp' + (bulkPriceIdCounter++); }
+let bulkPrices = [
+  { id: nextBulkPriceId(), ingredientKey:'ghk_powder', price:900,  qty:50,  unit:'g',     density:1.0,  extra:99, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ghk_powder', price:1750, qty:100, unit:'g',     density:1.0,  extra:99, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ghk_powder', price:3320, qty:200, unit:'g',     density:1.0,  extra:99, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ghk_powder', price:6750, qty:500, unit:'g',     density:1.0,  extra:99, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ghk_liquid', price:173,  qty:2,   unit:'fl oz', density:1.05, extra:10, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ghk_liquid', price:680,  qty:16,  unit:'fl oz', density:1.05, extra:10, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ghk_liquid', price:4020, qty:128, unit:'fl oz', density:1.05, extra:10, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ahk_powder', price:570,  qty:25,  unit:'g',     density:1.0,  extra:99, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ahk_powder', price:1000, qty:50,  unit:'g',     density:1.0,  extra:99, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ahk_powder', price:1795, qty:100, unit:'g',     density:1.0,  extra:99, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ahk_powder', price:3150, qty:200, unit:'g',     density:1.0,  extra:99, active:false, manufacturer:'USA', notes:'' },
+  { id: nextBulkPriceId(), ingredientKey:'ghk_powder', price:250,  qty:100, unit:'g',     density:1.0,  extra:98, active:false, manufacturer:'China', notes:'FOB, DDP ~$50 quoted for orders under 1kg' },
+  { id: nextBulkPriceId(), ingredientKey:'ghk_powder', price:484,  qty:200, unit:'g',     density:1.0,  extra:98, active:true,  manufacturer:'China', notes:'FOB, DDP ~$50 quoted for orders under 1kg' },
+  { id: nextBulkPriceId(), ingredientKey:'ghk_powder', price:717,  qty:300, unit:'g',     density:1.0,  extra:98, active:false, manufacturer:'China', notes:'FOB, DDP ~$50 quoted for orders under 1kg' },
+  { id: nextBulkPriceId(), ingredientKey:'ahk_powder', price:350,  qty:25,  unit:'g',     density:1.0,  extra:98, active:true,  manufacturer:'China', notes:'FOB, DDP ~$50 quoted for orders under 1kg' },
+  { id: nextBulkPriceId(), ingredientKey:'ahk_powder', price:1150, qty:100, unit:'g',     density:1.0,  extra:98, active:false, manufacturer:'China', notes:'FOB, DDP ~$50 quoted for orders under 1kg' },
+  { id: nextBulkPriceId(), ingredientKey:'ahk_powder', price:2180, qty:200, unit:'g',     density:1.0,  extra:98, active:false, manufacturer:'China', notes:'FOB, DDP ~$50 quoted for orders under 1kg' },
+  { id: nextBulkPriceId(), ingredientKey:'ahk_powder', price:3240, qty:300, unit:'g',     density:1.0,  extra:98, active:false, manufacturer:'China', notes:'FOB, DDP ~$50 quoted for orders under 1kg' }
+];
+
+document.querySelectorAll('.section-nav-btn').forEach(btn => {
+  btn.addEventListener('click', function(){
+    const target = document.getElementById(this.getAttribute('data-target'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+buildIngredientRows();
+favoritePricePoints = [{ retail2: num('retail2oz'), retail4: num('retail4oz') }];
+renderPricePoints();
+recalc();
+
+// ---- Save / load recipe (file-based — no browser storage used) ----
+const SIMPLE_STATE_IDS = ['batchVolume','panthenolPct','niacinPct','phenoxyPct','ethoxyPct','ghkFinalPct','ahkFinalPct',
+  'bottle2ozCost','bottle4ozCost','box2ozCost','box4ozCost','misc2ozCost','misc4ozCost',
+  'retail2oz','retail4oz',
+  'amzFeePct','amzRoas','amzVol2oz','amzVol4oz',
+  'dtcFeePct','dtcDiscountPct','dtcShipCostAbove','dtcPctFreeShip','dtcAdSpend','dtcVol2oz','dtcVol4oz'];
+
+function getRecipeState(){
+  const state = { recipeName: document.getElementById('recipeName').value, savedAt: new Date().toISOString() };
+  SIMPLE_STATE_IDS.forEach(id => state[id] = document.getElementById(id).value);
+  state.ingredients = {};
+  document.querySelectorAll('#ingredientCostBody tr').forEach(row => {
+    const key = row.getAttribute('data-key');
+    state.ingredients[key] = {
+      checked: row.querySelector('.ing-checkbox').checked,
+      price: row.querySelector('.ing-price').value,
+      qty: row.querySelector('.ing-qty').value,
+      unit: row.querySelector('.ing-unit').value,
+      density: row.querySelector('.ing-density').value
+    };
+  });
+  state.bulkPrices = bulkPrices; // GHK-Cu/AHK-Cu pricing lives here now, not in `ingredients`
+  return state;
+}
+
+function applyRecipeState(state){
+  if (state.recipeName !== undefined) document.getElementById('recipeName').value = state.recipeName;
+  SIMPLE_STATE_IDS.forEach(id => {
+    if (state[id] !== undefined){
+      const el = document.getElementById(id);
+      if (el) el.value = state[id];
+    }
+  });
+  if (state.ingredients){
+    document.querySelectorAll('#ingredientCostBody tr').forEach(row => {
+      const key = row.getAttribute('data-key');
+      const ing = state.ingredients[key];
+      if (!ing) return;
+      if (ing.checked !== undefined) row.querySelector('.ing-checkbox').checked = ing.checked;
+      row.querySelector('.ing-price').value = ing.price;
+      row.querySelector('.ing-qty').value = ing.qty;
+      row.querySelector('.ing-unit').value = ing.unit;
+      row.querySelector('.ing-density').value = ing.density;
+    });
+  }
+  if (Array.isArray(state.bulkPrices) && state.bulkPrices.length > 0){
+    state.bulkPrices.forEach(b => { if (!b.id) b.id = nextBulkPriceId(); });
+    bulkPrices = state.bulkPrices;
+    renderBulkPrices();
+  }
+  recalc();
+}
+
+function showRecipeStatus(msg, isError){
+  const el = document.getElementById('recipeStatus');
+  el.textContent = msg;
+  el.classList.toggle('warn', !!isError);
+}
+
+document.getElementById('btnDownload').addEventListener('click', function(){
+  const state = getRecipeState();
+  const safeName = (state.recipeName || 'recipe').trim().replace(/[^a-z0-9-_ ]/gi,'').replace(/\s+/g,'-') || 'recipe';
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = safeName + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showRecipeStatus('Downloaded ' + safeName + '.json — keep it somewhere you\'ll find it, then upload it here next time.');
+});
+
+document.getElementById('btnUploadTrigger').addEventListener('click', function(){
+  document.getElementById('importFile').click();
+});
+
+document.getElementById('importFile').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try {
+      const state = JSON.parse(evt.target.result);
+      applyRecipeState(state);
+      showRecipeStatus('Loaded' + (state.recipeName ? ' "' + state.recipeName + '"' : ' recipe') + '.');
+    } catch(err){
+      showRecipeStatus('Could not read that file — make sure it\'s a recipe .json you downloaded from this tool.', true);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('btnCopyText').addEventListener('click', function(){
+  const state = getRecipeState();
+  const text = JSON.stringify(state, null, 2);
+  const textarea = document.getElementById('recipeText');
+  textarea.value = text;
+  textarea.focus();
+  textarea.select();
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      showRecipeStatus('Copied to clipboard — paste it into a notes doc to save it.');
+    }).catch(function(){
+      showRecipeStatus('Text is selected below — press Ctrl/Cmd+C to copy it.');
+    });
+  } else {
+    showRecipeStatus('Text is selected below — press Ctrl/Cmd+C to copy it.');
+  }
+});
+
+document.getElementById('btnLoadText').addEventListener('click', function(){
+  const text = document.getElementById('recipeText').value.trim();
+  if (!text){
+    showRecipeStatus('Paste a saved recipe into the box first.', true);
+    return;
+  }
+  try {
+    const state = JSON.parse(text);
+    applyRecipeState(state);
+    showRecipeStatus('Loaded' + (state.recipeName ? ' "' + state.recipeName + '"' : ' recipe') + ' from text.');
+  } catch(err){
+    showRecipeStatus('That doesn\'t look like valid recipe text.', true);
+  }
+});
+
+// ---- Scenario comparison (session-only, in-memory — not saved to the recipe file) ----
+
+function escapeAttr(str){
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+function populateScenarioBasisSelect(){
+  const select = document.getElementById('scenarioBasisSelect');
+  if (!select) return;
+  const prevValue = select.value;
+  let html = '<option value="live">Current sheet formula (live)</option>';
+  html += scenarios.map(s => `<option value="${escapeAttr(s.id)}">${escapeAttr(s.name)}</option>`).join('');
+  select.innerHTML = html;
+  const stillExists = scenarios.some(s => s.id === prevValue) || prevValue === 'live';
+  select.value = stillExists ? prevValue : 'live';
+}
+
+// Computes a scenario's ingredient cost. Legacy/manually-saved scenarios carry frozen
+// ing2oz/ing4oz numbers and just return those. Scenarios generated from Bulk Pricing carry
+// bulkRefs instead — a live LOOKUP into the current bulkPrices list and the current sheet's
+// other components — so editing a bulk price's $ later updates every scenario built from it.
+// pctOverrides locks in the concentration each peptide was generated at, so scenarios built
+// to compare different % levels stay distinct even as the live sheet's % field changes.
+function computeScenarioIngCost(scenario){
+  if (!scenario.bulkRefs){
+    return { ing2oz: scenario.ing2oz, ing4oz: scenario.ing4oz };
+  }
+  const c2 = (window.lastCalc && window.lastCalc.components2oz) || {panthenol:0,niacin:0,phenoxyethanol:0,ethoxydiglycol:0,ghk:0,ahk:0,water:0};
+  const c4 = (window.lastCalc && window.lastCalc.components4oz) || {panthenol:0,niacin:0,phenoxyethanol:0,ethoxydiglycol:0,ghk:0,ahk:0,water:0};
+  let ing2oz = c2.panthenol + c2.niacin + c2.phenoxyethanol + c2.ethoxydiglycol + c2.ghk + c2.ahk + c2.water;
+  let ing4oz = c4.panthenol + c4.niacin + c4.phenoxyethanol + c4.ethoxydiglycol + c4.ghk + c4.ahk + c4.water;
+  Object.keys(scenario.bulkRefs).forEach(componentKey => {
+    const bulkId = scenario.bulkRefs[componentKey];
+    if (!bulkId || c2[componentKey] === undefined) return;
+    const b = bulkPrices.find(x => x.id === bulkId);
+    if (!b) return; // referenced bulk price was deleted — falls back to the live component, already included above
+    const pctOverride = scenario.pctOverrides ? scenario.pctOverrides[componentKey] : undefined;
+    ing2oz = ing2oz - c2[componentKey] + bulkBottleCost(b, OZ_2_ML, pctOverride);
+    ing4oz = ing4oz - c4[componentKey] + bulkBottleCost(b, OZ_4_ML, pctOverride);
+  });
+  return { ing2oz, ing4oz };
+}
+
+// A peptide only counts as "used" if its locked % is actually above zero — a scenario can
+// reference a bulk price for AHK-Cu while AHK-Cu's concentration is 0%, which contributes
+// nothing and shouldn't be labeled as using it. Falls back to the source label for scenarios
+// saved before pctOverrides existed.
+function isPeptideUsed(s, key){
+  if (s.pctOverrides && s.pctOverrides[key] !== undefined && s.pctOverrides[key] !== null){
+    return s.pctOverrides[key] > 0;
+  }
+  const sourceField = key === 'ghk' ? s.ghkSource : s.ahkSource;
+  return !!(sourceField && sourceField !== 'not used');
+}
+
+function peptideCategory(s){
+  const g = isPeptideUsed(s, 'ghk');
+  const a = isPeptideUsed(s, 'ahk');
+  if (g && a) return 'Both';
+  if (g) return 'GHK-Cu';
+  if (a) return 'AHK-Cu';
+  return 'None';
+}
+
+// Shows each used peptide's %. If it's locked (pctOverrides), shows that fixed number. If a
+// peptide is present but NOT locked for this scenario (e.g. a single-ingredient AHK-Cu swap
+// still has GHK-Cu active, just not pinned), shows the current live % instead, labeled so it's
+// clear that number moves with the sheet rather than being fixed for comparison.
+function formatPctUsed(s){
+  const parts = [];
+  ['ghk', 'ahk'].forEach(key => {
+    if (!isPeptideUsed(s, key)) return;
+    const label = key === 'ghk' ? 'GHK ' : 'AHK ';
+    if (s.pctOverrides && s.pctOverrides[key] !== undefined && s.pctOverrides[key] !== null){
+      parts.push(label + s.pctOverrides[key] + '%');
+    } else {
+      const live = num(key === 'ghk' ? 'ghkFinalPct' : 'ahkFinalPct');
+      parts.push(label + live + '% (live)');
+    }
+  });
+  return parts.length ? parts.join(' / ') : '—';
+}
+
+// Identifies which specific bulk-price entry a scenario is pulling its cost from — needed to
+// tell apart, say, two GHK-Cu liquid scenarios at the same % that reference different sizes
+// (2oz-bulk vs 128oz-bulk pricing).
+function formatBulkSize(s){
+  if (!s.bulkRefs) return '—';
+  const parts = [];
+  Object.keys(s.bulkRefs).forEach(key => {
+    const bulkId = s.bulkRefs[key];
+    const label = key === 'ghk' ? 'GHK' : key === 'ahk' ? 'AHK' : key;
+    const b = bulkPrices.find(x => x.id === bulkId);
+    if (!b){ parts.push(label + ': missing'); return; }
+    parts.push(label + ' ' + b.qty + b.unit);
+  });
+  return parts.length ? parts.join(' / ') : '—';
+}
+
+// Gathers the current channel settings once per render/sort pass, so every scenario's live
+// numbers are computed against the same snapshot of retail price, fees, ROAS, etc.
+function getScenarioContext(){
+  const { pkg2oz, pkg4oz } = getPackagingCosts();
+  return {
+    pkg2oz, pkg4oz,
+    retail2: num('retail2oz'), retail4: num('retail4oz'),
+    amzFeePct: num('amzFeePct'), amzRoas: num('amzRoas'),
+    dtcFeePct: num('dtcFeePct'), dtcDiscountPct: num('dtcDiscountPct'),
+    dtcShip: getDtcAvgShipCost()
+  };
+}
+
+// Computes every live number a scenario row shows/sorts by, given a shared context.
+function computeScenarioMetrics(s, ctx){
+  const { ing2oz, ing4oz } = computeScenarioIngCost(s);
+  const cogs2 = ing2oz + ctx.pkg2oz, cogs4 = ing4oz + ctx.pkg4oz;
+  const amzE2 = unitEconomics(ctx.retail2, cogs2, ctx.amzFeePct, ctx.amzRoas);
+  const amzE4 = unitEconomics(ctx.retail4, cogs4, ctx.amzFeePct, ctx.amzRoas);
+  const dtcE2 = unitEconomicsDtc(ctx.retail2, cogs2, ctx.dtcFeePct, ctx.dtcDiscountPct, ctx.dtcShip);
+  const dtcE4 = unitEconomicsDtc(ctx.retail4, cogs4, ctx.dtcFeePct, ctx.dtcDiscountPct, ctx.dtcShip);
+  return {
+    ing2oz, ing4oz,
+    amzProfit2oz: amzE2.profit, amzProfit4oz: amzE4.profit,
+    dtcGross2oz: dtcE2.grossProfit, dtcGross4oz: dtcE4.grossProfit
+  };
+}
+
+// Column value used for sorting — strings for the descriptive columns, numbers for everything
+// computed. Recomputed fresh each sort so it always reflects current channel settings.
+function getSortValue(s, key, ctx){
+  switch (key){
+    case 'peptide': return peptideCategory(s);
+    case 'ghkSource': return s.ghkSource || '';
+    case 'ahkSource': return s.ahkSource || '';
+    case 'bulkSize': return formatBulkSize(s);
+    case 'pctUsed': return (s.pctOverrides ? (s.pctOverrides.ghk||0) + (s.pctOverrides.ahk||0) : 0);
+    default: return computeScenarioMetrics(s, ctx)[key];
+  }
+}
+
+function sortScenariosBy(key, additive){
+  const existingIdx = scenarioSortLevels.findIndex(l => l.key === key);
+  if (additive){
+    // Shift-click: add/toggle this column as the next tiebreaker, keeping earlier levels intact.
+    if (existingIdx >= 0){
+      scenarioSortLevels[existingIdx].dir = scenarioSortLevels[existingIdx].dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      scenarioSortLevels.push({ key, dir: 'asc' });
+    }
+  } else {
+    // Plain click: this column becomes the ONLY sort, replacing any tiebreakers — unless it's
+    // already the sole active sort, in which case it just flips direction.
+    if (scenarioSortLevels.length === 1 && scenarioSortLevels[0].key === key){
+      scenarioSortLevels[0].dir = scenarioSortLevels[0].dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      scenarioSortLevels = [{ key, dir: 'asc' }];
+    }
+  }
+  applyScenarioSort();
+  renderScenarios();
+}
+
+function applyScenarioSort(){
+  if (scenarioSortLevels.length === 0) return;
+  const ctx = getScenarioContext();
+  const withValues = scenarios.map(s => ({
+    s,
+    vals: scenarioSortLevels.map(l => getSortValue(s, l.key, ctx))
+  }));
+  withValues.sort((a, b) => {
+    for (let i = 0; i < scenarioSortLevels.length; i++){
+      const dirMult = scenarioSortLevels[i].dir === 'asc' ? 1 : -1;
+      const av = a.vals[i], bv = b.vals[i];
+      let cmp;
+      if (typeof av === 'string' || typeof bv === 'string'){
+        cmp = String(av).localeCompare(String(bv));
+      } else {
+        cmp = (av||0) - (bv||0);
+      }
+      if (cmp !== 0) return cmp * dirMult;
+    }
+    return 0;
+  });
+  scenarios = withValues.map(x => x.s);
+}
+
+function updateSortHeaderIndicators(){
+  document.querySelectorAll('.sortable-th').forEach(th => {
+    const key = th.getAttribute('data-sort-key');
+    const indicator = th.querySelector('.sort-indicator');
+    const levelIdx = scenarioSortLevels.findIndex(l => l.key === key);
+    if (levelIdx >= 0){
+      th.classList.add('sort-active');
+      const arrow = scenarioSortLevels[levelIdx].dir === 'asc' ? '▲' : '▼';
+      const priority = scenarioSortLevels.length > 1 ? String(levelIdx + 1) : '';
+      indicator.textContent = priority + arrow;
+    } else {
+      th.classList.remove('sort-active');
+      indicator.textContent = '⇅';
+    }
+  });
+}
+
+// Pins the first N columns (header + body) in place with position:sticky while the rest of
+// the table scrolls sideways underneath them. Offsets are measured from actual rendered
+// widths since columns aren't a fixed size.
+// Value a scenario has in a given filterable (categorical) column.
+function getFilterValue(s, column, ctx){
+  switch (column){
+    case 'peptide': return peptideCategory(s);
+    case 'ghkSource': return s.ghkSource || '';
+    case 'ahkSource': return s.ahkSource || '';
+    case 'bulkSize': return formatBulkSize(s);
+    case 'pctUsed': return formatPctUsed(s);
+    default: return computeScenarioMetrics(s, ctx)[column]; // numeric $ columns
+  }
+}
+
+// A scenario must pass every active column's filter (AND across columns) to be visible.
+function scenarioPassesFilter(s, ctx){
+  return scenarioActiveFilterColumns.every(col => {
+    const def = FILTERABLE_COLUMNS.find(c => c.key === col);
+    if (def && def.type === 'range'){
+      const range = scenarioFilterRange[col];
+      if (!range) return true;
+      const val = computeScenarioMetrics(s, ctx)[col];
+      if (range.min !== '' && range.min !== undefined && range.min !== null && val < parseFloat(range.min)) return false;
+      if (range.max !== '' && range.max !== undefined && range.max !== null && val > parseFloat(range.max)) return false;
+      return true;
+    }
+    const hidden = scenarioFilterHidden[col];
+    if (!hidden || hidden.size === 0) return true;
+    return !hidden.has(getFilterValue(s, col, ctx));
+  });
+}
+
+function columnLabel(col){
+  const def = FILTERABLE_COLUMNS.find(c => c.key === col);
+  return def ? def.label : col;
+}
+
+// Keeps the "Add a filter" dropdown limited to columns not already being filtered.
+function updateFilterAddOptions(){
+  const select = document.getElementById('scenarioFilterAddColumn');
+  const available = FILTERABLE_COLUMNS.filter(c => !scenarioActiveFilterColumns.includes(c.key));
+  select.innerHTML = '<option value="">' + (available.length ? 'Choose a column…' : 'All columns filtered') + '</option>'
+    + available.map(c => `<option value="${c.key}">${c.label}</option>`).join('');
+}
+
+// Renders one compact removable block per active filter column. Categorical columns get a
+// checklist of unique values; the $ columns get a min/max range instead. Several blocks can be
+// open at once, each narrowing the table further (AND across columns).
+function renderActiveFilters(ctx){
+  const container = document.getElementById('scenarioActiveFilters');
+  updateFilterAddOptions();
+  if (scenarioActiveFilterColumns.length === 0){
+    container.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+  container.style.display = 'flex';
+  container.style.flexWrap = 'wrap';
+  container.style.gap = '10px';
+  container.innerHTML = scenarioActiveFilterColumns.map(col => {
+    const def = FILTERABLE_COLUMNS.find(c => c.key === col);
+    if (def.type === 'range'){
+      const range = scenarioFilterRange[col] || { min:'', max:'' };
+      return `
+        <div class="filter-block">
+          <div class="filter-block-head">
+            <span>${columnLabel(col)}</span>
+            <button type="button" class="filter-remove-col" data-column="${col}" title="Remove this filter">×</button>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="number" class="scenario-filter-range" data-column="${col}" data-bound="min" placeholder="Min" value="${range.min}" style="width:64px;background:var(--bg-panel);border:1px solid var(--line);border-radius:5px;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:5px 7px;">
+            <span class="hint" style="margin:0;">to</span>
+            <input type="number" class="scenario-filter-range" data-column="${col}" data-bound="max" placeholder="Max" value="${range.max}" style="width:64px;background:var(--bg-panel);border:1px solid var(--line);border-radius:5px;color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:5px 7px;">
+          </div>
+        </div>
+      `;
+    }
+    const uniqueValues = Array.from(new Set(scenarios.map(s => getFilterValue(s, col, ctx))));
+    const hidden = scenarioFilterHidden[col] || new Set();
+    return `
+      <div class="filter-block">
+        <div class="filter-block-head">
+          <span>${columnLabel(col)}</span>
+          <button type="button" class="filter-remove-col" data-column="${col}" title="Remove this filter">×</button>
+        </div>
+        <div class="filter-chips">
+          ${uniqueValues.map(v => `
+            <label class="filter-value-chip">
+              <input type="checkbox" class="scenario-filter-value" data-column="${col}" value="${escapeAttr(v)}" ${hidden.has(v) ? '' : 'checked'}>
+              ${escapeAttr(v) || '(blank)'}
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+  container.querySelectorAll('.scenario-filter-value').forEach(cb => {
+    cb.addEventListener('change', function(){
+      const col = this.getAttribute('data-column');
+      if (!scenarioFilterHidden[col]) scenarioFilterHidden[col] = new Set();
+      if (this.checked) scenarioFilterHidden[col].delete(this.value);
+      else scenarioFilterHidden[col].add(this.value);
+      renderScenarios();
+    });
+  });
+  container.querySelectorAll('.scenario-filter-range').forEach(input => {
+    input.addEventListener('input', function(){
+      const col = this.getAttribute('data-column');
+      const bound = this.getAttribute('data-bound');
+      if (!scenarioFilterRange[col]) scenarioFilterRange[col] = { min:'', max:'' };
+      scenarioFilterRange[col][bound] = this.value;
+      renderScenarios();
+    });
+  });
+  container.querySelectorAll('.filter-remove-col').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const col = this.getAttribute('data-column');
+      scenarioActiveFilterColumns = scenarioActiveFilterColumns.filter(c => c !== col);
+      delete scenarioFilterHidden[col];
+      delete scenarioFilterRange[col];
+      renderScenarios();
+    });
+  });
+}
+
+function applyScenarioFreeze(){
+  const table = document.getElementById('scenarioTable');
+  if (!table || table.style.display === 'none') return;
+  const headerRow = table.querySelector('thead tr');
+  if (!headerRow) return;
+  const headerCells = Array.from(headerRow.children);
+  const bodyRows = Array.from(document.querySelectorAll('#scenarioTableBody tr'));
+
+  let cumulative = 0;
+  const offsets = headerCells.map(cell => {
+    const left = cumulative;
+    cumulative += cell.getBoundingClientRect().width;
+    return left;
+  });
+
+  function styleCell(cell, i, isHeader){
+    if (i < scenarioFreezeCount){
+      cell.style.position = 'sticky';
+      cell.style.left = offsets[i] + 'px';
+      cell.style.zIndex = isHeader ? '3' : '2';
+      cell.style.background = 'var(--bg-panel)';
+    } else {
+      cell.style.position = '';
+      cell.style.left = '';
+      cell.style.zIndex = '';
+      cell.style.background = '';
+    }
+  }
+
+  headerCells.forEach((cell, i) => styleCell(cell, i, true));
+  bodyRows.forEach(row => {
+    Array.from(row.children).forEach((cell, i) => styleCell(cell, i, false));
+  });
+}
+
+// Same pattern as applyScenarioFreeze, applied to the Bulk Pricing table instead.
+function applyBulkFreeze(){
+  const table = document.getElementById('bulkPriceTable');
+  if (!table || table.style.display === 'none') return;
+  const headerRow = table.querySelector('thead tr');
+  if (!headerRow) return;
+  const headerCells = Array.from(headerRow.children);
+  const bodyRows = Array.from(document.querySelectorAll('#bulkPriceTableBody tr'));
+
+  let cumulative = 0;
+  const offsets = headerCells.map(cell => {
+    const left = cumulative;
+    cumulative += cell.getBoundingClientRect().width;
+    return left;
+  });
+
+  function styleCell(cell, i, isHeader){
+    if (i < bulkFreezeCount){
+      cell.style.position = 'sticky';
+      cell.style.left = offsets[i] + 'px';
+      cell.style.zIndex = isHeader ? '3' : '2';
+      cell.style.background = 'var(--bg-panel)';
+    } else {
+      cell.style.position = '';
+      cell.style.left = '';
+      cell.style.zIndex = '';
+      cell.style.background = '';
+    }
+  }
+
+  headerCells.forEach((cell, i) => styleCell(cell, i, true));
+  bodyRows.forEach(row => {
+    Array.from(row.children).forEach((cell, i) => styleCell(cell, i, false));
+  });
+}
+
+function renderScenarios(){
+  populateScenarioBasisSelect();
+  updateSortHeaderIndicators();
+  const table = document.getElementById('scenarioTable');
+  const empty = document.getElementById('scenarioEmpty');
+  const body = document.getElementById('scenarioTableBody');
+  if (scenarios.length === 0){
+    renderActiveFilters();
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    empty.textContent = 'No scenarios saved yet.';
+    renderFavoriteScenarios();
+    return;
+  }
+
+  // Live economics — recomputed from CURRENT channel settings every render, so adjusting
+  // retail price, packaging, Amazon fees/ROAS, or DTC fees/discount/shipping/ad spend
+  // updates every saved scenario's profit numbers at once. Computed before filtering since
+  // range filters (on the $ columns) need it too.
+  const ctx = getScenarioContext();
+  renderActiveFilters(ctx);
+
+  // Filtering only hides rows from view — it never touches the underlying scenarios array, so
+  // sorting, reordering, and removal still operate on real positions (data-index below is the
+  // TRUE index in `scenarios`, not the position among visible rows).
+  const visible = scenarios.map((s, i) => ({ s, i })).filter(({ s }) => scenarioPassesFilter(s, ctx));
+  if (visible.length === 0){
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    empty.textContent = 'All scenarios are hidden by the current filter — adjust it above.';
+    renderFavoriteScenarios();
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+
+  body.innerHTML = visible.map(({ s, i }) => {
+    const m = computeScenarioMetrics(s, ctx);
+    const liveBadge = s.bulkRefs ? '<span class="subtag" title="Ingredient cost is looked up live from Bulk Pricing — edit a price there and this updates.">live</span>' : '';
+    return `
+    <tr>
+      <td style="min-width:100px;">${peptideCategory(s)} ${liveBadge}</td>
+      <td>${s.ghkSource}</td>
+      <td>${s.ahkSource}</td>
+      <td>${formatBulkSize(s)}</td>
+      <td>${formatPctUsed(s)}</td>
+      <td style="text-align:right;">${fmtMoney2(m.ing2oz)}</td>
+      <td style="text-align:right;">${fmtMoney2(m.ing4oz)}</td>
+      <td style="text-align:right;">${fmtSigned(m.amzProfit2oz)}</td>
+      <td style="text-align:right;">${fmtSigned(m.amzProfit4oz)}</td>
+      <td style="text-align:right;">${fmtSigned(m.dtcGross2oz)}</td>
+      <td style="text-align:right;">${fmtSigned(m.dtcGross4oz)}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn scenario-favorite" data-index="${i}" title="${s.favorite ? 'Remove from favorites' : 'Add to favorites'}" style="padding:4px 8px;font-size:11px;">${s.favorite ? '★' : '☆'}</button>
+        <button class="btn scenario-up" data-index="${i}" title="Move up" style="padding:4px 8px;font-size:11px;" ${i===0?'disabled':''}>↑</button>
+        <button class="btn scenario-down" data-index="${i}" title="Move down" style="padding:4px 8px;font-size:11px;" ${i===scenarios.length-1?'disabled':''}>↓</button>
+        <button class="btn scenario-remove" data-index="${i}" title="Remove" style="padding:4px 8px;font-size:11px;">×</button>
+      </td>
+    </tr>
+  `;
+  }).join('');
+  body.querySelectorAll('.scenario-favorite').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const i = parseInt(this.getAttribute('data-index'), 10);
+      scenarios[i].favorite = !scenarios[i].favorite;
+      renderScenarios();
+    });
+  });
+  body.querySelectorAll('.scenario-up').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const i = parseInt(this.getAttribute('data-index'), 10);
+      if (i > 0){
+        [scenarios[i-1], scenarios[i]] = [scenarios[i], scenarios[i-1]];
+        renderScenarios();
+      }
+    });
+  });
+  body.querySelectorAll('.scenario-down').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const i = parseInt(this.getAttribute('data-index'), 10);
+      if (i < scenarios.length - 1){
+        [scenarios[i], scenarios[i+1]] = [scenarios[i+1], scenarios[i]];
+        renderScenarios();
+      }
+    });
+  });
+  body.querySelectorAll('.scenario-remove').forEach(btn => {
+    btn.addEventListener('click', function(){
+      scenarios.splice(parseInt(this.getAttribute('data-index'), 10), 1);
+      renderScenarios();
+    });
+  });
+  applyScenarioFreeze();
+  renderFavoriteScenarios();
+}
+
+// Shows a focused, read-only view of just the starred scenarios — its own section, independent
+// of whatever sort/filter/freeze state the main Compare Scenarios table is in. Unfavoriting
+// here removes it from this list only; the scenario itself stays in the main table.
+function renderFavoriteScenarios(){
+  const table = document.getElementById('favoriteScenarioTable');
+  const empty = document.getElementById('favoriteScenarioEmpty');
+  const body = document.getElementById('favoriteScenarioTableBody');
+  if (!table || !body) return;
+
+  const favorites = scenarios.map((s, i) => ({ s, i })).filter(({ s }) => s.favorite);
+  if (favorites.length === 0){
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    renderFavoriteBreakdown(favorites.map(f => f.s));
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+
+  const ctx = getScenarioContext();
+  body.innerHTML = favorites.map(({ s, i }) => {
+    const m = computeScenarioMetrics(s, ctx);
+    const liveBadge = s.bulkRefs ? '<span class="subtag" title="Ingredient cost is looked up live from Bulk Pricing — edit a price there and this updates.">live</span>' : '';
+    return `
+    <tr>
+      <td style="min-width:100px;">${peptideCategory(s)} ${liveBadge}</td>
+      <td>${s.ghkSource}</td>
+      <td>${s.ahkSource}</td>
+      <td>${formatBulkSize(s)}</td>
+      <td>${formatPctUsed(s)}</td>
+      <td style="text-align:right;">${fmtMoney2(m.ing2oz)}</td>
+      <td style="text-align:right;">${fmtMoney2(m.ing4oz)}</td>
+      <td style="text-align:right;">${fmtSigned(m.amzProfit2oz)}</td>
+      <td style="text-align:right;">${fmtSigned(m.amzProfit4oz)}</td>
+      <td style="text-align:right;">${fmtSigned(m.dtcGross2oz)}</td>
+      <td style="text-align:right;">${fmtSigned(m.dtcGross4oz)}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn favorite-unstar" data-index="${i}" title="Remove from favorites" style="padding:4px 8px;font-size:11px;">★</button>
+      </td>
+    </tr>
+  `;
+  }).join('');
+
+  body.querySelectorAll('.favorite-unstar').forEach(btn => {
+    btn.addEventListener('click', function(){
+      const i = parseInt(this.getAttribute('data-index'), 10);
+      scenarios[i].favorite = false;
+      renderScenarios();
+    });
+  });
+
+  renderFavoriteBreakdown(favorites.map(f => f.s));
+}
+
+function renderPricePoints(){
+  const body = document.getElementById('pricePointTableBody');
+  if (!body) return;
+  body.innerHTML = favoritePricePoints.map((p, i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);">
+      <div class="input-row" style="width:120px;"><span class="prefix">$</span><input type="number" class="pp-retail2" data-index="${i}" value="${p.retail2}" step="0.5" min="0"></div>
+      <div class="input-row" style="width:120px;"><span class="prefix">$</span><input type="number" class="pp-retail4" data-index="${i}" value="${p.retail4}" step="0.5" min="0"></div>
+      <button class="btn pp-remove" data-index="${i}" style="padding:4px 8px;font-size:11px;">×</button>
+    </div>
+  `).join('');
+  body.querySelectorAll('.pp-retail2, .pp-retail4').forEach(inp => {
+    inp.addEventListener('input', function(){
+      const i = parseInt(this.getAttribute('data-index'), 10);
+      const field = this.classList.contains('pp-retail2') ? 'retail2' : 'retail4';
+      favoritePricePoints[i][field] = parseFloat(this.value) || 0;
+      renderFavoriteScenarios();
+    });
+  });
+  body.querySelectorAll('.pp-remove').forEach(btn => {
+    btn.addEventListener('click', function(){
+      favoritePricePoints.splice(parseInt(this.getAttribute('data-index'), 10), 1);
+      renderPricePoints();
+      renderFavoriteScenarios();
+    });
+  });
+}
+
+document.getElementById('btnAddPricePoint').addEventListener('click', function(){
+  favoritePricePoints.push({ retail2: num('retail2oz'), retail4: num('retail4oz') });
+  renderPricePoints();
+  renderFavoriteScenarios();
+});
+
+// One row per (favorite × price point) — retail price comes from the price point, everything
+// else (fees, ROAS, discount, shipping, packaging) is still pulled live from Channel Pricing.
+function renderFavoriteBreakdown(favoriteList){
+  const table = document.getElementById('favoriteBreakdownTable');
+  const empty = document.getElementById('favoriteBreakdownEmpty');
+  const body = document.getElementById('favoriteBreakdownTableBody');
+  if (!table || !body) return;
+
+  if (favoriteList.length === 0 || favoritePricePoints.length === 0){
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+
+  const baseCtx = getScenarioContext();
+  const rows = [];
+  favoriteList.forEach(s => {
+    favoritePricePoints.forEach((p, pIdx) => {
+      const ctx = Object.assign({}, baseCtx, { retail2: p.retail2, retail4: p.retail4 });
+      const m = computeScenarioMetrics(s, ctx);
+      rows.push(`
+        <tr>
+          <td>${peptideCategory(s)}</td>
+          <td>${formatBulkSize(s)}</td>
+          <td>${formatPctUsed(s)}</td>
+          <td style="text-align:right;">${fmtMoney2(p.retail2)}</td>
+          <td style="text-align:right;">${fmtMoney2(p.retail4)}</td>
+          <td style="text-align:right;">${fmtSigned(m.amzProfit2oz)}</td>
+          <td style="text-align:right;">${fmtSigned(m.amzProfit4oz)}</td>
+          <td style="text-align:right;">${fmtSigned(m.dtcGross2oz)}</td>
+          <td style="text-align:right;">${fmtSigned(m.dtcGross4oz)}</td>
+          <td><button class="btn breakdown-remove-pp" data-pp-index="${pIdx}" title="Remove this price point from the comparison" style="padding:4px 8px;font-size:11px;">×</button></td>
+        </tr>
+      `);
+    });
+  });
+  body.innerHTML = rows.join('');
+  body.querySelectorAll('.breakdown-remove-pp').forEach(btn => {
+    btn.addEventListener('click', function(){
+      favoritePricePoints.splice(parseInt(this.getAttribute('data-pp-index'), 10), 1);
+      renderPricePoints();
+      renderFavoriteScenarios();
+    });
+  });
+}
+
+document.getElementById('btnSaveScenario').addEventListener('click', function(){
+  if (!window.lastCalc){
+    return;
+  }
+  const ghkUsed = window.lastCalc.ghkSource && window.lastCalc.ghkSource !== 'not used';
+  const ahkUsed = window.lastCalc.ahkSource && window.lastCalc.ahkSource !== 'not used';
+  const pctOverrides = {};
+  if (ghkUsed) pctOverrides.ghk = num('ghkFinalPct');
+  if (ahkUsed) pctOverrides.ahk = num('ahkFinalPct');
+  const name = (ghkUsed && ahkUsed ? 'GHK+AHK' : ghkUsed ? 'GHK-Cu' : ahkUsed ? 'AHK-Cu' : 'Scenario') + ' ' + (scenarios.length + 1);
+  scenarios.push({
+    id: nextScenarioId(), name,
+    ing2oz: window.lastCalc.ing2oz, ing4oz: window.lastCalc.ing4oz,
+    ghkSource: window.lastCalc.ghkSource, ahkSource: window.lastCalc.ahkSource,
+    pctOverrides
+  });
+  renderScenarios();
+});
+
+document.getElementById('btnClearScenarios').addEventListener('click', function(){
+  scenarios = scenarios.filter(s => s.favorite); // keep favorites — only clear the rest
+  renderScenarios();
+});
+
+function showScenarioStatus(msg, isError){
+  const el = document.getElementById('scenarioStatus');
+  el.textContent = msg;
+  el.classList.toggle('warn', !!isError);
+}
+
+function importScenarios(loaded, sourceLabel){
+  if (!Array.isArray(loaded)) throw new Error('no scenarios array found');
+  // Assign a stable id to any loaded scenario that doesn't already have one (older exports
+  // predate ids) — the basis dropdown in Channel Pricing keys off this, not array position.
+  loaded.forEach(s => { if (!s.id) s.id = nextScenarioId(); });
+  // Append to whatever's already here rather than wiping the current session's comparisons.
+  scenarios = scenarios.concat(loaded);
+  renderScenarios();
+  showScenarioStatus('Loaded ' + loaded.length + ' scenario' + (loaded.length===1?'':'s') + ' from ' + sourceLabel + ' (added to what was already here).');
+}
+
+document.getElementById('btnDownloadScenarios').addEventListener('click', function(){
+  if (scenarios.length === 0){
+    showScenarioStatus('No scenarios saved yet — save at least one before downloading.', true);
+    return;
+  }
+  const payload = { savedAt: new Date().toISOString(), scenarios: scenarios };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'scenario-comparisons.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showScenarioStatus('Downloaded scenario-comparisons.json (' + scenarios.length + ' scenario' + (scenarios.length===1?'':'s') + ').');
+});
+
+document.getElementById('btnUploadScenariosTrigger').addEventListener('click', function(){
+  document.getElementById('importScenariosFile').click();
+});
+
+document.getElementById('importScenariosFile').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try {
+      const payload = JSON.parse(evt.target.result);
+      const loaded = Array.isArray(payload) ? payload : payload.scenarios;
+      importScenarios(loaded, 'file');
+    } catch(err){
+      showScenarioStatus('Could not read that file — make sure it\'s a comparisons .json you downloaded from this tool.', true);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('btnCopyScenariosText').addEventListener('click', function(){
+  if (scenarios.length === 0){
+    showScenarioStatus('No scenarios saved yet — save at least one before copying.', true);
+    return;
+  }
+  const payload = { savedAt: new Date().toISOString(), scenarios: scenarios };
+  const text = JSON.stringify(payload, null, 2);
+  const textarea = document.getElementById('scenariosText');
+  textarea.value = text;
+  textarea.focus();
+  textarea.select();
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      showScenarioStatus('Copied to clipboard — paste it into a notes doc to save it.');
+    }).catch(function(){
+      showScenarioStatus('Text is selected below — press Ctrl/Cmd+C to copy it.');
+    });
+  } else {
+    showScenarioStatus('Text is selected below — press Ctrl/Cmd+C to copy it.');
+  }
+});
+
+document.getElementById('btnLoadScenariosText').addEventListener('click', function(){
+  const text = document.getElementById('scenariosText').value.trim();
+  if (!text){
+    showScenarioStatus('Paste saved comparisons into the box first.', true);
+    return;
+  }
+  try {
+    const payload = JSON.parse(text);
+    const loaded = Array.isArray(payload) ? payload : payload.scenarios;
+    importScenarios(loaded, 'text');
+  } catch(err){
+    showScenarioStatus('That doesn\'t look like valid comparisons text.', true);
+  }
+});
+
+// ---- Bulk pricing reference (session-only unless downloaded/copied — a lookup list, not tied to the live formula) ----
+function bulkRate(entry){
+  const price = parseFloat(entry.price) || 0;
+  const qty = parseFloat(entry.qty) || 0;
+  const unit = entry.unit;
+  if (WEIGHT_UNITS[unit] !== undefined){
+    const grams = qty * WEIGHT_UNITS[unit];
+    return { value: grams > 0 ? price/grams : 0, label: '/g' };
+  }
+  const mL = qty * (VOLUME_UNITS[unit] || 0);
+  return { value: mL > 0 ? price/mL : 0, label: '/mL' };
+}
+
+// Computes what a bulk-price entry would cost per bottle. Every bulk entry is a peptide
+// (GHK-Cu or AHK-Cu, liquid or powder) now — density and stock%/purity% live directly on the
+// entry itself, not looked up from an ingredient-table row. pctOverride lets a saved scenario
+// lock in a specific concentration instead of reading whatever's live on the sheet right now —
+// otherwise every scenario comparing different concentrations would collapse to showing the
+// same one, since there's only one live GHK-Cu/AHK-Cu % field on the page.
+function bulkBottleCost(entry, bottleMl, pctOverride){
+  const def = bulkPeptideDef(entry.ingredientKey);
+  if (!def) return 0;
+  const rateInfo = bulkRate(entry);
+  const perGram = rateInfo.label === '/g';
+  const density = parseFloat(entry.density) || 1;
+  const extraVal = parseFloat(entry.extra) || 0;
+  const finalPct = pctOverride !== undefined ? pctOverride : (def.peptide === 'ghk' ? num('ghkFinalPct') : num('ahkFinalPct'));
+
+  let amountNeeded = 0; // expressed in the same unit as rateInfo (g if perGram, else mL)
+  if (def.type === 'liquid'){
+    const stockConc = extraVal || 10;
+    const volumeMl = stockConc > 0 ? (finalPct * bottleMl / stockConc) : 0;
+    amountNeeded = perGram ? volumeMl * density : volumeMl;
+  } else {
+    const purity = extraVal || 99;
+    const activeGrams = (finalPct/100) * bottleMl;
+    const gramsNeeded = purity > 0 ? activeGrams / (purity/100) : 0;
+    amountNeeded = perGram ? gramsNeeded : gramsNeeded / density;
+  }
+  return amountNeeded * rateInfo.value;
+}
+
+// How many bottles a single bulk purchase can supply, at whatever concentration is currently
+// set for that peptide — the whole bulk quantity divided by how much one bottle actually uses.
+function bulkBottleYield(entry, bottleMl, pctOverride){
+  const def = bulkPeptideDef(entry.ingredientKey);
+  if (!def) return null;
+  const finalPct = pctOverride !== undefined ? pctOverride : (def.peptide === 'ghk' ? num('ghkFinalPct') : num('ahkFinalPct'));
+  if (!finalPct || finalPct <= 0) return null;
+
+  const qty = parseFloat(entry.qty) || 0;
+  const totalInBaseUnit = WEIGHT_UNITS[entry.unit] !== undefined
+    ? qty * WEIGHT_UNITS[entry.unit]           // total grams purchased
+    : qty * (VOLUME_UNITS[entry.unit] || 0);   // total mL purchased
+
+  let amountPerBottle;
+  if (def.type === 'liquid'){
+    const stockConc = parseFloat(entry.extra) || 10;
+    amountPerBottle = stockConc > 0 ? (finalPct * bottleMl / stockConc) : 0; // mL per bottle
+  } else {
+    const purity = parseFloat(entry.extra) || 99;
+    const activeGrams = (finalPct/100) * bottleMl;
+    amountPerBottle = purity > 0 ? (activeGrams / (purity/100)) : 0; // g per bottle
+  }
+  if (!amountPerBottle || amountPerBottle <= 0) return null;
+  return totalInBaseUnit / amountPerBottle;
+}
+
+// Updates just one row's computed cells (rate, $/2oz, $/4oz) without touching any input
+// element — rebuilding the row's HTML on every keystroke would steal focus from whatever
+// field the person is actively typing in.
+function updateBulkRowComputed(i){
+  const b = bulkPrices[i];
+  const row = document.querySelector(`#bulkPriceTableBody tr[data-bulk-index="${i}"]`);
+  if (!b || !row) return;
+  const rate = bulkRate(b);
+  const cost2oz = bulkBottleCost(b, OZ_2_ML);
+  const cost4oz = bulkBottleCost(b, OZ_4_ML);
+  const yield2oz = bulkBottleYield(b, OZ_2_ML);
+  const yield4oz = bulkBottleYield(b, OZ_4_ML);
+  row.querySelector('.bulk-rate-cell').textContent = fmtRate(rate.value, rate.label==='/g');
+  row.querySelector('.bulk-cost2-cell').textContent = fmtMoney2(cost2oz);
+  row.querySelector('.bulk-cost4-cell').textContent = fmtMoney2(cost4oz);
+  row.querySelector('.bulk-yield2-cell').textContent = yield2oz===null ? '—' : Math.floor(yield2oz).toLocaleString();
+  row.querySelector('.bulk-yield4-cell').textContent = yield4oz===null ? '—' : Math.floor(yield4oz).toLocaleString();
+}
+
+function renderBulkPrices(){
+  const table = document.getElementById('bulkPriceTable');
+  const empty = document.getElementById('bulkPriceEmpty');
+  const body = document.getElementById('bulkPriceTableBody');
+  if (bulkPrices.length === 0){
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+  body.innerHTML = bulkPrices.map((b, i) => {
+    const rate = bulkRate(b);
+    const cost2oz = bulkBottleCost(b, OZ_2_ML);
+    const cost4oz = bulkBottleCost(b, OZ_4_ML);
+    const yield2oz = bulkBottleYield(b, OZ_2_ML);
+    const yield4oz = bulkBottleYield(b, OZ_4_ML);
+    const def = bulkPeptideDef(b.ingredientKey) || {};
+    const extraLabel = def.type === 'liquid' ? 'Stock %' : 'Purity %';
+    return `
+    <tr data-bulk-index="${i}">
+      <td class="ing-checkbox-cell"><input type="checkbox" class="bulk-active" data-index="${i}" ${b.active?'checked':''} title="Use as the current live ${def.peptide==='ghk'?'GHK-Cu':'AHK-Cu'} source — click again to unset"></td>
+      <td class="cell-input">
+        <select class="bulk-peptide" data-index="${i}">
+          <option value="ghk" ${def.peptide==='ghk'?'selected':''}>GHK-Cu</option>
+          <option value="ahk" ${def.peptide==='ahk'?'selected':''}>AHK-Cu</option>
+        </select>
+      </td>
+      <td class="cell-input">
+        <select class="bulk-form" data-index="${i}">
+          <option value="liquid" ${def.type==='liquid'?'selected':''}>Liquid</option>
+          <option value="powder" ${def.type==='powder'?'selected':''}>Powder</option>
+        </select>
+      </td>
+      <td class="cell-input">
+        <select class="bulk-manufacturer" data-index="${i}">
+          <option value="USA" ${b.manufacturer!=='China'?'selected':''}>USA</option>
+          <option value="China" ${b.manufacturer==='China'?'selected':''}>China</option>
+        </select>
+      </td>
+      <td class="cell-input"><div class="input-row"><span class="prefix">$</span><input type="number" class="bulk-price" data-index="${i}" value="${b.price}" step="0.01" min="0"></div></td>
+      <td class="cell-input"><div class="input-row"><input type="number" class="bulk-qty" data-index="${i}" value="${b.qty}" step="0.1" min="0"></div></td>
+      <td class="cell-input"><select class="bulk-unit" data-index="${i}">${unitOptions(b.unit)}</select></td>
+      <td class="cell-input"><div class="input-row"><input type="number" class="bulk-density" data-index="${i}" value="${b.density}" step="0.01" min="0.01"></div></td>
+      <td class="cell-input"><div class="input-row"><input type="number" class="bulk-extra" data-index="${i}" value="${b.extra}" step="0.5" min="0.1" max="100"><span class="suffix">%</span></div><div class="hint" style="margin-top:2px;">${extraLabel}</div></td>
+      <td class="cell-input"><input type="text" class="bulk-notes" data-index="${i}" value="${escapeAttr(b.notes||'')}" placeholder="e.g. RS Synthesis, COA on file" autocomplete="off" style="width:100%;background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--ink);font-family:inherit;font-size:12.5px;padding:8px;"></td>
+      <td class="bulk-rate-cell" style="text-align:right;white-space:nowrap;">${fmtRate(rate.value, rate.label==='/g')}</td>
+      <td class="bulk-cost2-cell" style="text-align:right;white-space:nowrap;">${fmtMoney2(cost2oz)}</td>
+      <td class="bulk-cost4-cell" style="text-align:right;white-space:nowrap;">${fmtMoney2(cost4oz)}</td>
+      <td class="bulk-yield2-cell" style="text-align:right;white-space:nowrap;">${yield2oz===null?'—':Math.floor(yield2oz).toLocaleString()}</td>
+      <td class="bulk-yield4-cell" style="text-align:right;white-space:nowrap;">${yield4oz===null?'—':Math.floor(yield4oz).toLocaleString()}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn bulk-remove" data-index="${i}" style="padding:4px 8px;font-size:11px;">×</button>
+      </td>
+    </tr>
+  `;
+  }).join('');
+
+  body.querySelectorAll('.bulk-peptide, .bulk-form').forEach(el => {
+    el.addEventListener('input', function(){
+      const i = parseInt(this.getAttribute('data-index'), 10);
+      const row = this.closest('tr');
+      const peptide = row.querySelector('.bulk-peptide').value;
+      const form = row.querySelector('.bulk-form').value;
+      bulkPrices[i].ingredientKey = peptide + '_' + form;
+      // Switching which peptide/form this row represents changes its Stock%/Purity% label
+      // and its active-group — needs a full re-render, not just the computed cells.
+      renderBulkPrices();
+      recalc();
+    });
+  });
+  body.querySelectorAll('.bulk-manufacturer, .bulk-price, .bulk-qty, .bulk-unit, .bulk-density, .bulk-extra, .bulk-notes').forEach(el => {
+    el.addEventListener('input', function(){
+      const i = parseInt(this.getAttribute('data-index'), 10);
+      const field = this.classList.contains('bulk-manufacturer') ? 'manufacturer'
+        : this.classList.contains('bulk-price') ? 'price'
+        : this.classList.contains('bulk-qty') ? 'qty'
+        : this.classList.contains('bulk-unit') ? 'unit'
+        : this.classList.contains('bulk-density') ? 'density'
+        : this.classList.contains('bulk-extra') ? 'extra'
+        : 'notes';
+      bulkPrices[i][field] = this.value;
+      // Update only this row's computed cells — never rebuild the table here, or the
+      // input the person is actively typing in loses focus after every keystroke.
+      updateBulkRowComputed(i);
+      if (bulkPrices[i].active) recalc(true); // keep the main formula in sync, but don't rebuild this whole table mid-keystroke
+    });
+  });
+  body.querySelectorAll('.bulk-active').forEach(checkbox => {
+    checkbox.addEventListener('change', function(){
+      const i = parseInt(this.getAttribute('data-index'), 10);
+      const peptide = bulkPeptideDef(bulkPrices[i].ingredientKey).peptide;
+      if (this.checked){
+        // Checking this one deactivates every other entry for the same peptide — still only
+        // one active source per peptide at a time.
+        bulkPrices.forEach((b, j) => {
+          const d = bulkPeptideDef(b.ingredientKey);
+          if (d && d.peptide === peptide) b.active = (j === i);
+        });
+      } else {
+        // Unchecking it just turns it off — leaves the peptide with no active source, unlike
+        // a radio button, which can't represent "none selected" once something's been picked.
+        bulkPrices[i].active = false;
+      }
+      recalc();
+    });
+  });
+  body.querySelectorAll('.bulk-remove').forEach(btn => {
+    btn.addEventListener('click', function(){
+      bulkPrices.splice(parseInt(this.getAttribute('data-index'), 10), 1);
+      renderBulkPrices();
+      recalc();
+    });
+  });
+  applyBulkFreeze();
+}
+
+document.getElementById('btnAddBulkPrice').addEventListener('click', function(){
+  bulkPrices.push({ id: nextBulkPriceId(), ingredientKey:'ghk_powder', price:1000, qty:50, unit:'g', density:1.0, extra:99, active:false, manufacturer:'USA', notes:'' });
+  renderBulkPrices();
+});
+
+// One scenario per saved bulk price: swaps just that ingredient's cost, keeps panthenol %,
+// niacinamide %, and the OTHER peptide's currently-active source exactly as configured now.
+// If BOTH GHK-Cu and AHK-Cu are active (final % > 0) and you've saved bulk prices for both,
+// it also generates one paired scenario per GHK-option × AHK-option combination — for when
+// you're running both peptides together (e.g. a 1:1 blend) and want to compare bulk choices
+// for each side at once.
+document.getElementById('btnGenerateScenarios').addEventListener('click', function(){
+  if (bulkPrices.length === 0){
+    showBulkPriceStatus('Add at least one bulk price first.', true);
+    return;
+  }
+  if (!window.lastCalc || !window.lastCalc.components2oz){
+    showBulkPriceStatus('Could not read the current formula — try again after the sheet finishes loading.', true);
+    return;
+  }
+  const c2 = window.lastCalc.components2oz;
+  const ghkFinalPctNow = num('ghkFinalPct');
+  const ahkFinalPctNow = num('ahkFinalPct');
+
+  function sourceLabelFor(key){
+    return key.endsWith('_liquid') ? 'liquid stock' : key.endsWith('_powder') ? 'powder' : null;
+  }
+  function labelFor(key){
+    const def = bulkPeptideDef(key);
+    return def ? def.label : key;
+  }
+  function shortLabel(b){
+    return labelFor(b.ingredientKey) + ' ' + b.qty + b.unit + '@$' + b.price;
+  }
+
+  let added = 0;
+  let skipped = 0;
+
+  // Two bulkRefs/pctOverrides objects are equivalent if they have the same keys and values —
+  // used below to avoid creating an exact duplicate of a scenario that already exists (e.g.
+  // from clicking Generate twice, or re-loading bulk prices that were already loaded).
+  function sameRefObj(a, b){
+    a = a || {}; b = b || {};
+    const ak = Object.keys(a).sort(), bk = Object.keys(b).sort();
+    if (ak.length !== bk.length) return false;
+    return ak.every((k, i) => k === bk[i] && a[k] === b[k]);
+  }
+  function duplicateExists(bulkRefs, pctOverrides){
+    return scenarios.some(s => sameRefObj(s.bulkRefs, bulkRefs) && sameRefObj(s.pctOverrides, pctOverrides));
+  }
+
+  // Single-ingredient swaps — each scenario stores a LIVE reference (bulkRefs) to the bulk
+  // price entry, not a frozen cost. Edit that entry's price later and this scenario updates.
+  // Each scenario locks in the CURRENT final % for whichever peptide it covers, so scenarios
+  // generated at different concentrations (across separate clicks) stay distinct — but the
+  // exact same bulk price + concentration combination is only ever added once.
+  bulkPrices.forEach(b => {
+    const key = b.ingredientKey;
+    const componentKey = key.startsWith('ghk_') ? 'ghk' : key.startsWith('ahk_') ? 'ahk' : key;
+    if (c2[componentKey] === undefined) return;
+    const isPeptide = componentKey === 'ghk' || componentKey === 'ahk';
+    const pctNow = componentKey === 'ghk' ? ghkFinalPctNow : componentKey === 'ahk' ? ahkFinalPctNow : null;
+    // Skip peptide bulk prices when that peptide is currently at 0% — a "0% locked" scenario
+    // contributes nothing and would misleadingly show a source without actually being used.
+    if (isPeptide && (!pctNow || pctNow <= 0)) return;
+    const bulkRefs = {};
+    bulkRefs[componentKey] = b.id;
+    const pctOverrides = isPeptide ? (() => { const p = {}; p[componentKey] = pctNow; return p; })() : undefined;
+    if (duplicateExists(bulkRefs, pctOverrides)){ skipped++; return; }
+    const sourceLabel = sourceLabelFor(key);
+    const ghkSource = componentKey === 'ghk' ? sourceLabel : window.lastCalc.ghkSource;
+    const ahkSource = componentKey === 'ahk' ? sourceLabel : window.lastCalc.ahkSource;
+    const name = labelFor(key) + ' — ' + b.qty + b.unit + ' @ $' + b.price
+      + (isPeptide ? ' (' + pctNow + '%)' : '')
+      + (b.notes ? ' — ' + b.notes : '');
+    const scenario = { id: nextScenarioId(), name, bulkRefs, ghkSource, ahkSource };
+    if (pctOverrides) scenario.pctOverrides = pctOverrides;
+    scenarios.push(scenario);
+    added++;
+  });
+
+  // Paired GHK×AHK swaps — only when both peptides are actually active in the current formula.
+  const ghkBulkOptions = bulkPrices.filter(b => b.ingredientKey.startsWith('ghk_'));
+  const ahkBulkOptions = bulkPrices.filter(b => b.ingredientKey.startsWith('ahk_'));
+  if (ghkFinalPctNow > 0 && ahkFinalPctNow > 0 && ghkBulkOptions.length > 0 && ahkBulkOptions.length > 0){
+    ghkBulkOptions.forEach(gb => {
+      ahkBulkOptions.forEach(ab => {
+        const bulkRefs = { ghk: gb.id, ahk: ab.id };
+        const pctOverrides = { ghk: ghkFinalPctNow, ahk: ahkFinalPctNow };
+        if (duplicateExists(bulkRefs, pctOverrides)){ skipped++; return; }
+        const name = shortLabel(gb) + ' (' + ghkFinalPctNow + '%) + ' + shortLabel(ab) + ' (' + ahkFinalPctNow + '%)';
+        scenarios.push({
+          id: nextScenarioId(), name, bulkRefs, pctOverrides,
+          ghkSource: sourceLabelFor(gb.ingredientKey), ahkSource: sourceLabelFor(ab.ingredientKey)
+        });
+        added++;
+      });
+    });
+  }
+
+  renderScenarios();
+  recalc();
+  if (added === 0 && skipped === 0){
+    showBulkPriceStatus('Nothing generated — GHK-Cu and AHK-Cu are both at 0% right now, so no bulk price would actually be used. Set a final % above 0 in Section 01 first.', true);
+  } else if (added === 0){
+    showBulkPriceStatus('Nothing new — all ' + skipped + ' combination' + (skipped===1?'':'s') + ' already exist' + (skipped===1?'s':'') + ' in Compare Scenarios below.');
+  } else {
+    showBulkPriceStatus('Generated ' + added + ' scenario' + (added===1?'':'s')
+      + (skipped > 0 ? ' (skipped ' + skipped + ' that already existed)' : '')
+      + ' — see them in Compare Scenarios below, or pick one from the "Ingredient cost basis" dropdown in Channel Pricing.');
+  }
+});
+
+function showBulkPriceStatus(msg, isError){
+  const el = document.getElementById('bulkPriceStatus');
+  el.textContent = msg;
+  el.classList.toggle('warn', !!isError);
+}
+
+function importBulkPrices(loaded, sourceLabel){
+  if (!Array.isArray(loaded)) throw new Error('no bulk prices array found');
+  // Assign a stable id to any loaded entry that doesn't already have one (older exports
+  // predate ids) — scenarios reference bulk prices by this id, not array position.
+  loaded.forEach(b => {
+    if (!b.id) b.id = nextBulkPriceId();
+    if (!b.manufacturer) b.manufacturer = 'USA'; // older exports predate this field
+  });
+  bulkPrices = bulkPrices.concat(loaded);
+  renderBulkPrices();
+  showBulkPriceStatus('Loaded ' + loaded.length + ' entr' + (loaded.length===1?'y':'ies') + ' from ' + sourceLabel + ' (added to what was already here).');
+}
+
+document.getElementById('btnDownloadBulkPrices').addEventListener('click', function(){
+  if (bulkPrices.length === 0){
+    showBulkPriceStatus('No bulk prices saved yet — add at least one before downloading.', true);
+    return;
+  }
+  const payload = { savedAt: new Date().toISOString(), bulkPrices: bulkPrices };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bulk-pricing.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showBulkPriceStatus('Downloaded bulk-pricing.json (' + bulkPrices.length + ' entr' + (bulkPrices.length===1?'y':'ies') + ').');
+});
+
+document.getElementById('btnUploadBulkPricesTrigger').addEventListener('click', function(){
+  document.getElementById('importBulkPricesFile').click();
+});
+
+document.getElementById('importBulkPricesFile').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try {
+      const payload = JSON.parse(evt.target.result);
+      const loaded = Array.isArray(payload) ? payload : payload.bulkPrices;
+      importBulkPrices(loaded, 'file');
+    } catch(err){
+      showBulkPriceStatus('Could not read that file — make sure it\'s a bulk-pricing .json you downloaded from this tool.', true);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('btnCopyBulkPricesText').addEventListener('click', function(){
+  if (bulkPrices.length === 0){
+    showBulkPriceStatus('No bulk prices saved yet — add at least one before copying.', true);
+    return;
+  }
+  const payload = { savedAt: new Date().toISOString(), bulkPrices: bulkPrices };
+  const text = JSON.stringify(payload, null, 2);
+  const textarea = document.getElementById('bulkPricesText');
+  textarea.value = text;
+  textarea.focus();
+  textarea.select();
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      showBulkPriceStatus('Copied to clipboard — paste it into a notes doc to save it.');
+    }).catch(function(){
+      showBulkPriceStatus('Text is selected below — press Ctrl/Cmd+C to copy it.');
+    });
+  } else {
+    showBulkPriceStatus('Text is selected below — press Ctrl/Cmd+C to copy it.');
+  }
+});
+
+document.getElementById('btnLoadBulkPricesText').addEventListener('click', function(){
+  const text = document.getElementById('bulkPricesText').value.trim();
+  if (!text){
+    showBulkPriceStatus('Paste saved bulk pricing into the box first.', true);
+    return;
+  }
+  try {
+    const payload = JSON.parse(text);
+    const loaded = Array.isArray(payload) ? payload : payload.bulkPrices;
+    importBulkPrices(loaded, 'text');
+  } catch(err){
+    showBulkPriceStatus('That doesn\'t look like valid bulk pricing text.', true);
+  }
+});
+
+renderBulkPrices();
+</script>
+</body>
+</html>
