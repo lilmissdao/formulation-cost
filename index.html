@@ -1486,7 +1486,7 @@ favoritePricePoints = [{ retail2: num('retail2oz'), retail4: num('retail4oz') }]
 renderPricePoints();
 recalc();
 
-// ---- Save / load recipe (file-based — no browser storage used) ----
+// ---- Save / load recipe (file export/import; auto-save to this browser is at the end of the script) ----
 const SIMPLE_STATE_IDS = ['batchVolume','panthenolPct','niacinPct','phenoxyPct','ethoxyPct','ghkFinalPct','ahkFinalPct',
   'bottle2ozCost','bottle4ozCost','box2ozCost','box4ozCost','misc2ozCost','misc4ozCost',
   'retail2oz','retail4oz',
@@ -2775,6 +2775,66 @@ document.getElementById('btnLoadBulkPricesText').addEventListener('click', funct
 });
 
 renderBulkPrices();
+
+// ---- Auto-save / restore (this browser only) ----
+// Everything you change is saved automatically and reloaded next visit, so settings stick
+// without needing to download/upload a file. Download/copy still works for moving between devices.
+const AUTOSAVE_KEY = 'formulationCostCalculator.v1';
+
+function autosaveNow(){
+  try {
+    const payload = {
+      recipe: getRecipeState(),
+      scenarios: scenarios,
+      favoritePricePoints: favoritePricePoints
+    };
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+  } catch(e){ /* storage blocked/full — app still works, just won't remember */ }
+}
+
+function bumpIdCounter(items, prefix, current){
+  let max = current - 1;
+  (items || []).forEach(it => {
+    const m = it && typeof it.id === 'string' && it.id.indexOf(prefix) === 0 ? parseInt(it.id.slice(prefix.length), 10) : NaN;
+    if (!isNaN(m) && m > max) max = m;
+  });
+  return max + 1;
+}
+
+function autorestore(){
+  let payload = null;
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if (raw) payload = JSON.parse(raw);
+  } catch(e){ return; }
+  if (!payload) return;
+  try {
+    if (payload.recipe){
+      if (Array.isArray(payload.recipe.bulkPrices)) bulkPriceIdCounter = bumpIdCounter(payload.recipe.bulkPrices, 'bp', bulkPriceIdCounter);
+      applyRecipeState(payload.recipe);
+    }
+    if (Array.isArray(payload.scenarios)){
+      scenarioIdCounter = bumpIdCounter(payload.scenarios, 'sc', scenarioIdCounter);
+      scenarios = payload.scenarios;
+      renderScenarios();
+    }
+    if (Array.isArray(payload.favoritePricePoints) && payload.favoritePricePoints.length){
+      favoritePricePoints = payload.favoritePricePoints;
+      renderPricePoints();
+    }
+    if (typeof renderFavoriteScenarios === 'function') renderFavoriteScenarios();
+  } catch(e){ /* corrupt save — ignore and start from defaults */ }
+}
+
+autorestore();
+
+let autosaveTimer = null;
+function scheduleAutosave(){
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(autosaveNow, 300);
+}
+['input','change','click'].forEach(evt => document.addEventListener(evt, scheduleAutosave, true));
+window.addEventListener('pagehide', autosaveNow);
 </script>
 </body>
 </html>
