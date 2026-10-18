@@ -411,6 +411,26 @@
   .btn-primary{background:var(--copper);border-color:var(--copper);color:#171d1b;font-weight:600;}
   .btn-primary:hover{background:var(--copper-bright);border-color:var(--copper-bright);color:#171d1b;}
   #recipeStatus.warn{color:var(--red);}
+  /* drag-to-reorder sections */
+  .drag-handle{
+    flex:none;
+    align-self:center;
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+    color:var(--verdigris-dim);
+    font-size:18px;
+    line-height:1;
+    padding:4px 6px;
+    border-radius:6px;
+    border:1px solid transparent;
+  }
+  .drag-handle:hover{color:var(--copper);border-color:var(--line, rgba(255,255,255,0.12));}
+  .drag-handle:active{cursor:grabbing;}
+  section.is-dragging{opacity:0.85;outline:2px dashed var(--copper);outline-offset:6px;}
+  body.dragging-sections{cursor:grabbing;user-select:none;-webkit-user-select:none;}
+  .nav-reset{margin-top:4px;border-style:dashed;opacity:0.8;}
 </style>
 </head>
 <body>
@@ -424,6 +444,7 @@
   <button type="button" class="section-nav-btn" data-target="sec-05">Channel Pricing</button>
   <button type="button" class="section-nav-btn" data-target="sec-06">Scenarios</button>
   <button type="button" class="section-nav-btn" data-target="sec-07">Favorites</button>
+  <button type="button" class="section-nav-btn nav-reset" id="btnResetSectionOrder" title="Put the sections back in their original order">Reset order</button>
 </nav>
 <div class="wrap">
 
@@ -2835,6 +2856,113 @@ function scheduleAutosave(){
 }
 ['input','change','click'].forEach(evt => document.addEventListener(evt, scheduleAutosave, true));
 window.addEventListener('pagehide', autosaveNow);
+
+// ---- Drag-to-reorder sections (grab the ⠿ handle next to a section title) ----
+const LAYOUT_KEY = 'formulationCostCalculator.layout.v1';
+const DEFAULT_SECTION_ORDER = Array.from(document.querySelectorAll('.wrap > section')).map(s => s.id);
+
+function syncNavToSections(){
+  const nav = document.querySelector('.section-nav');
+  const reset = document.getElementById('btnResetSectionOrder');
+  document.querySelectorAll('.wrap > section').forEach(sec => {
+    const btn = nav.querySelector('.section-nav-btn[data-target="' + sec.id + '"]');
+    if (btn) nav.insertBefore(btn, reset);
+  });
+}
+
+function saveSectionOrder(){
+  try {
+    const order = Array.from(document.querySelectorAll('.wrap > section')).map(s => s.id);
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(order));
+  } catch(e){}
+}
+
+function applySectionOrder(order){
+  const wrap = document.querySelector('.wrap');
+  const byId = {};
+  wrap.querySelectorAll(':scope > section').forEach(s => byId[s.id] = s);
+  const anchor = wrap.querySelector(':scope > section');
+  if (!anchor) return;
+  // Insert in the requested order right before the first section's current position;
+  // any section missing from `order` keeps its relative place at the end.
+  const ids = order.filter(id => byId[id]).concat(DEFAULT_SECTION_ORDER.filter(id => order.indexOf(id) < 0 && byId[id]));
+  const marker = document.createComment('sections');
+  wrap.insertBefore(marker, anchor);
+  ids.forEach(id => wrap.insertBefore(byId[id], marker));
+  marker.remove();
+  syncNavToSections();
+}
+
+document.querySelectorAll('.wrap > section').forEach(sec => {
+  const head = sec.querySelector('.section-head');
+  if (!head) return;
+  const handle = document.createElement('span');
+  handle.className = 'drag-handle';
+  handle.textContent = '⠿';
+  handle.title = 'Drag to move this section';
+  handle.setAttribute('role', 'button');
+  handle.setAttribute('aria-label', 'Drag to reorder section');
+  head.insertBefore(handle, head.firstChild);
+
+  handle.addEventListener('pointerdown', function(e){
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    sec.classList.add('is-dragging');
+    document.body.classList.add('dragging-sections');
+    let lastY = e.clientY;
+    let raf = null;
+
+    function reposition(){
+      const others = Array.from(document.querySelectorAll('.wrap > section')).filter(s => s !== sec);
+      for (const o of others){
+        const r = o.getBoundingClientRect();
+        if (lastY >= r.top && lastY <= r.bottom){
+          const before = lastY < r.top + r.height / 2;
+          const ref = before ? o : o.nextElementSibling;
+          if (ref !== sec && sec.nextElementSibling !== ref) o.parentNode.insertBefore(sec, ref);
+          break;
+        }
+      }
+    }
+    let lastT = performance.now();
+    function autoScroll(t){
+      const dt = Math.min(100, t - lastT); lastT = t;
+      const edge = 90, maxSpeed = 1100; // px per second, faster nearer the edge
+      if (lastY < edge) window.scrollBy(0, -maxSpeed * dt / 1000 * Math.min(1, (edge - lastY) / edge + 0.2));
+      else if (lastY > window.innerHeight - edge) window.scrollBy(0, maxSpeed * dt / 1000 * Math.min(1, (lastY - (window.innerHeight - edge)) / edge + 0.2));
+      reposition();
+      raf = requestAnimationFrame(autoScroll);
+    }
+    raf = requestAnimationFrame(autoScroll);
+
+    function onMove(ev){ lastY = ev.clientY; reposition(); }
+    function onUp(){
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
+      cancelAnimationFrame(raf);
+      sec.classList.remove('is-dragging');
+      document.body.classList.remove('dragging-sections');
+      syncNavToSections();
+      saveSectionOrder();
+      sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    // listen on document (not the handle): moving the section in the DOM drops pointer capture
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onUp);
+  });
+});
+
+document.getElementById('btnResetSectionOrder').addEventListener('click', function(){
+  applySectionOrder(DEFAULT_SECTION_ORDER);
+  try { localStorage.removeItem(LAYOUT_KEY); } catch(e){}
+});
+
+try {
+  const savedOrder = JSON.parse(localStorage.getItem(LAYOUT_KEY) || 'null');
+  if (Array.isArray(savedOrder)) applySectionOrder(savedOrder);
+} catch(e){}
 </script>
 </body>
 </html>
